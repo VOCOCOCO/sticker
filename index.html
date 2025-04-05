@@ -205,14 +205,24 @@
     changeTab(1);
 
     // Получение данных пользователя из Telegram Web Apps API
-    if (window.Telegram && Telegram.WebApp) {
-        Telegram.WebApp.expand(); // Разворачиваем мини-приложение на весь экран
-
-        const user = window.Telegram.WebApp.initDataUnsafe.user; // Получаем данные пользователя
-        if (user && user.photo_url) {
-            document.getElementById("profile-pic").src = user.photo_url; // Обновляем фото профиля
+    function updateProfile() {
+        if (window.Telegram && Telegram.WebApp) {
+            const user = Telegram.WebApp.initDataUnsafe.user; // Получаем данные пользователя
+            if (user) {
+                // Обновляем имя пользователя
+                document.getElementById("profile-name").textContent = user.first_name || "Имя пользователя";
+                
+                // Обновляем фото профиля, если оно существует
+                if (user.photo_url) {
+                    document.getElementById("profile-pic").src = user.photo_url;
+                }
+            }
         }
     }
+
+    // Разворачиваем Telegram Web App и обновляем профиль
+    Telegram.WebApp.ready();
+    updateProfile();
   </script>
 
 </body>
