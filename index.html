@@ -70,7 +70,7 @@
       height: 250px;
       margin: 0 auto;
       position: relative;
-      top: 40px; /* Немного выше по центру */
+      top: 45px; /* Немного выше по центру */
     }
 
     .chapter-text {
@@ -96,8 +96,9 @@
     }
 
     .top-right .number {
-      font-size: 24px;
+      font-size: 26px;
       margin-right: 5px;
+      font-weight: bold;
     }
 
     .top-right .icon {
@@ -124,6 +125,71 @@
       border-radius: 50%;
       object-fit: cover;
       margin-top: -10px;
+    }
+
+    /* Новый прямоугольник с иконкой и кнопкой */
+    .join-container {
+      background-color: #444;
+      padding: 15px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .join-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .join-left img {
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+    }
+
+    .join-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-right: 20px;
+    }
+
+    .bonus-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .bonus-info {
+      font-size: 14px;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 5px;
+      border-radius: 5px;
+    }
+
+    .bonus-info img {
+      width: 15px;
+      height: 15px;
+      margin-right: 5px;
+    }
+
+    .join-button {
+      background-color: #5a5a5a;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .join-button:hover {
+      background-color: #737373;
     }
   </style>
   <!-- Подключаем Lottie -->
@@ -158,6 +224,25 @@
     <div id="profile-container">
       <img id="profile-pic" src="default_avatar.png" alt="Фото профиля" width="100" height="100">
       <div id="profile-name">Загрузка...</div>
+    </div>
+
+    <!-- Прямоугольник с иконкой и кнопкой -->
+    <div class="join-container">
+      <!-- Левая часть: иконка и текст -->
+      <div class="join-left">
+        <img src="2900294.png" alt="Icon"> <!-- Иконка слева -->
+        <div class="join-title">Join to VOCO</div>
+      </div>
+
+      <!-- Правая часть: бонусы и кнопка -->
+      <div class="bonus-container">
+        <div class="bonus-info">
+          <img src="5198231.png" alt="Bonus Icon"> <!-- Иконка для бонуса -->
+          <span>10</span>
+        </div>
+      </div>
+
+      <button class="join-button">Start</button>
     </div>
   </div>
   
