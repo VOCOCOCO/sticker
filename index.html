@@ -155,7 +155,7 @@
 
   <div class="tab-content" id="tab2">
     <div id="profile-container">
-      <img id="profile-pic" src="default_avatar.png" alt="Profile Picture">
+      <img id="profile-pic" src="default_avatar.png" alt="Фото профиля" width="100" height="100">
       <div id="profile-name">Загрузка...</div>
     </div>
   </div>
@@ -208,21 +208,13 @@
     if (window.Telegram && Telegram.WebApp) {
         Telegram.WebApp.expand(); // Разворачиваем мини-приложение на весь экран
 
-        const initData = Telegram.WebApp.initDataUnsafe; // Используем initDataUnsafe для получения данных
-        if (initData) {
-            try {
-                const userData = initData.user; // Получаем пользователя из initDataUnsafe
-
-                if (userData) {
-                    document.getElementById("profile-name").textContent = userData.first_name || "Имя пользователя";
-                    document.getElementById("profile-pic").src = userData.photo_url || "default_avatar.png";
-                }
-            } catch (error) {
-                console.error("Ошибка при обработке данных пользователя:", error);
-            }
+        const user = window.Telegram.WebApp.initDataUnsafe.user; // Получаем данные пользователя
+        if (user && user.photo_url) {
+            document.getElementById("profile-pic").src = user.photo_url; // Обновляем фото профиля
         }
     }
   </script>
 
 </body>
 </html>
+
