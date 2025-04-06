@@ -316,8 +316,11 @@ function giveBonus() {
       localStorage.setItem('ticketCount1', ticketCount1);  // Сохраняем в локальное хранилище
       alert('You will be credited with a reward after subscribing!');  // Показываем сообщение
       window.location.href = "https://t.me/voco_in";  // Переход по ссылке
-    } 
-  }
+    } else {
+      alert('Вы уже получили свои билеты!');
+     }
+   } 
+  
   
   // Функция для выдачи второго бонуса и перехода по новой ссылке
   function giveBonus2() {
@@ -327,17 +330,21 @@ function giveBonus() {
       localStorage.setItem('ticketCount2', ticketCount2);  // Сохраняем в локальное хранилище
       alert('You will be credited with a reward after subscribing!');  // Показываем сообщение
       window.location.href = "https://t.me/VO2CO";  // Переход по новой ссылке
+    }else {
+        alert('Вы уже получили свои билеты!');
     } 
   }
   
   // Функция для обновления отображения количества билетов
-  function updateTicketCount() {
-    const ticketCount1 = localStorage.getItem('ticketCount1') || 0;
-    const ticketCount2 = localStorage.getItem('ticketCount2') || 0;
+function updateTicketCount() {
+    // Получаем количество билетов для каждого блока и приводим к числу
+    const ticketCount1 = parseInt(localStorage.getItem('ticketCount1')) || 0;
+    const ticketCount2 = parseInt(localStorage.getItem('ticketCount2')) || 0;
     
     // Обновляем отображение билетов для каждого блока
     document.getElementById('ticket-count').textContent = ticketCount1 + ticketCount2;  // Сумма всех билетов
-  }
+}
+
   
   // Обновление количества билетов при загрузке страницы
   window.onload = updateTicketCount;
@@ -346,4 +353,5 @@ function giveBonus() {
 
 </body>
 </html>
+
 
