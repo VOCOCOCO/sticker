@@ -64,6 +64,23 @@
       object-fit: contain;
     }
 
+    /* Стили для анимации Lottie */
+    #lottie-container {
+      width: 210px;
+      height: 210px;
+      margin: 0 auto;
+      position: relative;
+      top: 60px; /* Немного выше по центру */
+    }
+
+    /* Стили для надписи "Chapter 0" */
+    .chapter-text {
+      font-size: 22px;
+      margin-top: 52px;
+      color: rgb(211, 234, 255);
+      font-weight: bold;
+    }
+
     /* Стили для цифры и иконки в верхнем правом углу */
     .top-right {
       position: fixed;
@@ -78,7 +95,7 @@
     }
 
     .top-right .number {
-      font-size: 26px;
+      font-size: 24px;
       margin-right: 5px;
       font-weight: bold;
     }
@@ -173,7 +190,8 @@
     <p></p>
     <!-- Контейнер для анимации -->
     <div id="lottie-container"></div>
-    <div class="chapter-text">Chapter 0</div> <!-- Текст под анимацией -->
+    <!-- Текст под анимацией -->
+    <div class="chapter-text">Soon...</div>
     <script>
       // Вставьте ваш URL JSON с GitHub
       const animationUrl = "https://raw.githubusercontent.com/VOCOCOCO/sticker/refs/heads/main/sticker%20(2).json";
@@ -199,8 +217,23 @@
     <div class="join-container" onclick="giveBonus()">
       <!-- Левая часть: иконка и текст -->
       <div class="join-left">
-        <img src="2900294.png" alt="Icon"> <!-- Иконка слева от текста -->
+        <img src="4121044.png" alt="Icon"> <!-- Иконка слева от текста -->
         <div class="join-title">Join to VOCO</div>
+      </div>
+
+      <!-- Прямоугольник с иконкой и текстом "10" справа -->
+      <div class="bonus-info">
+        <img src="5198231.png" alt="Bonus Icon"> <!-- Иконка для бонуса -->
+        <span>10</span>
+      </div>
+    </div>
+
+    <!-- Второй прямоугольник с иконкой и кнопкой -->
+    <div class="join-container" onclick="giveBonus2()">
+      <!-- Левая часть: иконка и текст -->
+      <div class="join-left">
+        <img src="4121044.png" alt="Icon"> <!-- Иконка слева от текста -->
+        <div class="join-title">Join to VOCO News</div>
       </div>
 
       <!-- Прямоугольник с иконкой и текстом "10" справа -->
@@ -275,16 +308,24 @@
     Telegram.WebApp.ready();
     updateProfile();
 
-    // Функция для выдачи бонуса и перехода по ссылке
+    // Функция для выдачи бонуса и перехода по ссылке (для первого прямоугольника)
     function giveBonus() {
       let ticketCount = localStorage.getItem('ticketCount') || 0;
       if (ticketCount < 1) {
         ticketCount = 10;  // Даем 10 билетов
         localStorage.setItem('ticketCount', ticketCount);  // Сохраняем в локальное хранилище
-        window.location.href = "https://example.com";  // Переход по ссылке
-      } else {
-        alert('Вы уже получили свои билеты!');
-      }
+        window.location.href = "https://t.me/voco_in";  // Переход по ссылке
+      } 
+    }
+
+    // Функция для выдачи второго бонуса и перехода по новой ссылке
+    function giveBonus2() {
+      let ticketCount = localStorage.getItem('ticketCount') || 0;
+      if (ticketCount < 1) {
+        ticketCount = 10;  // Даем еще 10 билетов
+        localStorage.setItem('ticketCount', ticketCount);  // Сохраняем в локальное хранилище
+        window.location.href = "https://t.me/VO2CO";  // Переход по новой ссылке
+      } 
     }
 
     // Функция для обновления отображения количества билетов
@@ -299,5 +340,4 @@
 
 </body>
 </html>
-
 
