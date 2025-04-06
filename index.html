@@ -64,22 +64,6 @@
       object-fit: contain;
     }
 
-    /* Стили для анимации Lottie */
-    #lottie-container {
-      width: 250px;
-      height: 250px;
-      margin: 0 auto;
-      position: relative;
-      top: 45px; /* Немного выше по центру */
-    }
-
-    .chapter-text {
-      font-size: 29px;
-      color: white;
-      margin-top: 52px;
-      font-weight: bold; /* Сделать текст жирным */
-    }
-
     /* Стили для цифры и иконки в верхнем правом углу */
     .top-right {
       position: fixed;
@@ -271,6 +255,26 @@
     // По умолчанию активировать первую вкладку
     changeTab(1);
 
+    // Функция для получения данных профиля из Telegram Web App API
+    function updateProfile() {
+        if (window.Telegram && Telegram.WebApp) {
+            const user = Telegram.WebApp.initDataUnsafe.user; // Получаем данные пользователя
+            if (user) {
+                // Обновляем имя пользователя
+                document.getElementById("profile-name").textContent = user.first_name || "Имя пользователя";
+                
+                // Обновляем фото профиля, если оно существует
+                if (user.photo_url) {
+                    document.getElementById("profile-pic").src = user.photo_url;
+                }
+            }
+        }
+    }
+
+    // Разворачиваем Telegram Web App и обновляем профиль
+    Telegram.WebApp.ready();
+    updateProfile();
+
     // Функция для выдачи бонуса и перехода по ссылке
     function giveBonus() {
       let ticketCount = localStorage.getItem('ticketCount') || 0;
@@ -295,4 +299,5 @@
 
 </body>
 </html>
+
 
