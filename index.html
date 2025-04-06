@@ -13,7 +13,6 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Переключатель вкладок */
     .tab-container {
       position: fixed;
       bottom: 0;
@@ -36,7 +35,7 @@
       justify-content: center;
       cursor: pointer;
       transition: all 0.3s ease;
-      border-radius: 5px; /* Гладкие углы */
+      border-radius: 5px;
     }
 
     .tab:hover {
@@ -45,7 +44,7 @@
 
     .tab-content {
       display: none;
-      padding: 20px;
+      padding: 50px;
       text-align: center;
     }
 
@@ -64,16 +63,14 @@
       object-fit: contain;
     }
 
-    /* Стили для анимации Lottie */
     #lottie-container {
       width: 210px;
       height: 210px;
       margin: 0 auto;
       position: relative;
-      top: 60px; /* Немного выше по центру */
+      top: 60px;
     }
 
-    /* Стили для надписи "Chapter 0" */
     .chapter-text {
       font-size: 22px;
       margin-top: 52px;
@@ -81,7 +78,6 @@
       font-weight: bold;
     }
 
-    /* Стили для цифры и иконки в верхнем правом углу */
     .top-right {
       position: fixed;
       top: 10px;
@@ -106,7 +102,6 @@
       object-fit: contain;
     }
 
-    /* Стили для профиля в 2-й вкладке */
     #profile-container {
       text-align: center;
       margin-top: 20px;
@@ -126,7 +121,6 @@
       margin-top: -10px;
     }
 
-    /* Новый прямоугольник с иконкой и кнопкой */
     .join-container {
       background-color: #444;
       padding: 15px;
@@ -135,7 +129,7 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 20px;
-      cursor: pointer; /* Делаем прямоугольник кнопкой */
+      cursor: pointer;
       transition: background-color 0.3s ease;
     }
 
@@ -145,9 +139,9 @@
     }
 
     .join-left img {
-      width: 50px; /* Сделаем иконку больше */
+      width: 50px;
       height: 50px;
-      margin-right: 10px; /* Отступ между иконкой и текстом */
+      margin-right: 10px;
     }
 
     .join-title {
@@ -155,7 +149,6 @@
       font-weight: bold;
     }
 
-    /* Прямоугольник с иконкой и текстом 10 справа */
     .bonus-info {
       display: flex;
       align-items: center;
@@ -164,92 +157,140 @@
       border-radius: 10px;
       font-size: 25px;
       cursor: pointer;
-      margin-left: auto; /* Сдвигаем элемент вправо */
+      margin-left: auto;
       transition: background-color 0.3s;
     }
 
     .bonus-info img {
-      width: 26px; /* Размер иконки */
+      width: 26px;
       height: 26px;
       margin-right: 5px;
     }
 
     .bonus-info:hover {
-      background-color: #555; /* Изменение фона при наведении */
+      background-color: #555;
+    }
+
+    #tab3 {
+      text-align: center;
+    }
+
+    #tab3 img {
+      width: 150px;
+      height: 150px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .participate-button {
+      background-color: #4444445c;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      width: 150px;
+      transition: background-color 0.3s ease;
+      margin-top: -5px;
+    }
+
+    .participate-button:hover {
+      background-color: #55555569;
+    }
+
+    /* Добавление разделителя и новой кнопки "Participate" */
+    .divider {
+      margin: 20px auto;
+      width: 80%;
+      border-top: 2px solid #444;
+    }
+
+    .second-participate-container {
+      margin-top: 20px;
+    }
+
+    .second-participate-button {
+      background-color: #4444445c;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      width: 150px;
+      transition: background-color 0.3s ease;
+    }
+
+    .second-participate-button:hover {
+      background-color: #55555569;
     }
   </style>
-  <!-- Подключаем Lottie -->
   <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.7.10/build/player/lottie.min.js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-  <!-- Содержимое вкладок -->
   <div class="tab-content" id="tab1">
-    <p></p>
-    <p></p>
-    <!-- Контейнер для анимации -->
     <div id="lottie-container"></div>
-    <!-- Текст под анимацией -->
     <div class="chapter-text">Soon...</div>
     <script>
-      // Вставьте ваш URL JSON с GitHub
       const animationUrl = "https://raw.githubusercontent.com/VOCOCOCO/sticker/refs/heads/main/sticker%20(2).json";
 
-      // Инициализация анимации Lottie
       lottie.loadAnimation({
-        container: document.getElementById('lottie-container'), // Контейнер, куда будет загружена анимация
-        renderer: 'svg', // Рендеринг через SVG
-        loop: true, // Зациклить анимацию
-        autoplay: true, // Автоматически начать анимацию
-        path: animationUrl // Путь к вашему JSON файлу
+        container: document.getElementById('lottie-container'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: animationUrl
       });
     </script>
   </div>
 
   <div class="tab-content" id="tab2">
     <div id="profile-container">
-      <img id="profile-pic" src="default_avatar.png" alt="Фото профиля" width="100" height="100">
+      <img id="profile-pic" src="default_avatar.png" alt="Фото профиля">
       <div id="profile-name">Загрузка...</div>
     </div>
-
-    <!-- Прямоугольник с иконкой и кнопкой -->
-    <div class="join-container" onclick="giveBonus()">
-      <!-- Левая часть: иконка и текст -->
+    <div class="join-container" onclick="giveBonus('first')">
       <div class="join-left">
-        <img src="4121044.png" alt="Icon"> <!-- Иконка слева от текста -->
+        <img src="4121044.png" alt="Icon">
         <div class="join-title">Join to VOCO</div>
       </div>
-
-      <!-- Прямоугольник с иконкой и текстом "10" справа -->
       <div class="bonus-info">
-        <img src="5198231.png" alt="Bonus Icon"> <!-- Иконка для бонуса -->
+        <img src="5198231.png" alt="Bonus Icon">
         <span>10</span>
       </div>
     </div>
 
-    <!-- Второй прямоугольник с иконкой и кнопкой -->
-    <div class="join-container" onclick="giveBonus2()">
-      <!-- Левая часть: иконка и текст -->
+    <div class="join-container" onclick="giveBonus('second')">
       <div class="join-left">
-        <img src="4121044.png" alt="Icon"> <!-- Иконка слева от текста -->
+        <img src="4121044.png" alt="Icon">
         <div class="join-title">Join to VOCO News</div>
       </div>
-
-      <!-- Прямоугольник с иконкой и текстом "10" справа -->
       <div class="bonus-info">
-        <img src="5198231.png" alt="Bonus Icon"> <!-- Иконка для бонуса -->
+        <img src="5198231.png" alt="Bonus Icon">
         <span>10</span>
       </div>
     </div>
   </div>
-  
+
   <div class="tab-content" id="tab3">
-    <h1></h1>
-    <p></p>
+    <img src="photo_2025-04-06_21-31-13.jpg" alt="Photo">
+    <button class="participate-button" onclick="participate()">Participate</button>
+
+    <!-- Черточка -->
+    <div class="divider"></div>
+
+    <!-- Новая кнопка участия с инвойсом -->
+    <div class="second-participate-container">
+      <button class="second-participate-button" onclick="openInvoice()">Participate with Payment</button>
+    </div>
   </div>
 
-  <!-- Переключатель вкладок -->
   <div class="tab-container">
     <div class="tab" onclick="changeTab(1)">
       <img src="6046403.png" alt="Tab 1">
@@ -262,15 +303,12 @@
     </div>
   </div>
 
-  <!-- Блок с цифрой и иконкой в верхнем правом углу -->
   <div class="top-right">
     <div class="number" id="ticket-count">1</div>
     <img class="icon" src="5198231.png" alt="Icon">
   </div>
 
-  <!-- Скрипт для переключения вкладок -->
   <script>
-    // Переключение вкладок
     function changeTab(tabNumber) {
       document.querySelectorAll('.tab-content').forEach(function(tab) {
         tab.classList.remove('active');
@@ -285,70 +323,75 @@
       document.querySelectorAll('.tab')[tabNumber - 1].classList.add('active');
     }
 
-    // По умолчанию активировать первую вкладку
     changeTab(1);
 
-    // Функция для получения данных профиля из Telegram Web App API
     function updateProfile() {
-        if (window.Telegram && Telegram.WebApp) {
-            const user = Telegram.WebApp.initDataUnsafe.user; // Получаем данные пользователя
-            if (user) {
-                // Обновляем имя пользователя
-                document.getElementById("profile-name").textContent = user.first_name || "Имя пользователя";
-                
-                // Обновляем фото профиля, если оно существует
-                if (user.photo_url) {
-                    document.getElementById("profile-pic").src = user.photo_url;
-                }
-            }
+      if (window.Telegram && Telegram.WebApp) {
+        const user = Telegram.WebApp.initDataUnsafe.user;
+        if (user) {
+          document.getElementById("profile-name").textContent = user.first_name || "Имя пользователя";
+          if (user.photo_url) {
+            document.getElementById("profile-pic").src = user.photo_url;
+          }
         }
+      }
     }
 
-    // Разворачиваем Telegram Web App и обновляем профиль
     Telegram.WebApp.ready();
     updateProfile();
 
-    // Функция для выдачи бонуса и перехода по ссылке (для первого прямоугольника)
-function giveBonus() {
-    let ticketCount1 = localStorage.getItem('ticketCount1') || 0;  // Сохраняем отдельное количество для первого блока
-    if (ticketCount1 < 1) {
-      ticketCount1 = 10;  // Даем 10 билетов
-      localStorage.setItem('ticketCount1', ticketCount1);  // Сохраняем в локальное хранилище
-      alert('You will be credited with a reward after subscribing!');  // Показываем сообщение
-      window.location.href = "https://t.me/voco_in";  // Переход по ссылке
-    } else {
-      alert('Вы уже получили свои билеты!');
-     }
-   } 
-  
-  
-  // Функция для выдачи второго бонуса и перехода по новой ссылке
-  function giveBonus2() {
-    let ticketCount2 = localStorage.getItem('ticketCount2') || 0;  // Сохраняем отдельное количество для второго блока
-    if (ticketCount2 < 1) {
-      ticketCount2 = 10;  // Даем еще 10 билетов
-      localStorage.setItem('ticketCount2', ticketCount2);  // Сохраняем в локальное хранилище
-      alert('You will be credited with a reward after subscribing!');  // Показываем сообщение
-      window.location.href = "https://t.me/VO2CO";  // Переход по новой ссылке
-    }else {
-        alert('Вы уже получили свои билеты!');
-    } 
-  }
-  
-  // Функция для обновления отображения количества билетов
-function updateTicketCount() {
-    // Получаем количество билетов для каждого блока и приводим к числу
-    const ticketCount1 = parseInt(localStorage.getItem('ticketCount1')) || 0;
-    const ticketCount2 = parseInt(localStorage.getItem('ticketCount2')) || 0;
-    
-    // Обновляем отображение билетов для каждого блока
-    document.getElementById('ticket-count').textContent = ticketCount1 + ticketCount2;  // Сумма всех билетов
-}
+    function giveBonus(linkType) {
+      let ticketCount = localStorage.getItem('ticketCount') || 0;
+      let isBonusClaimed = localStorage.getItem(linkType + 'Claimed') || false;
 
-  
-  // Обновление количества билетов при загрузке страницы
-  window.onload = updateTicketCount;
-  
+      if (!isBonusClaimed) {
+        ticketCount = parseInt(ticketCount) + 10;
+        localStorage.setItem('ticketCount', ticketCount);
+        localStorage.setItem(linkType + 'Claimed', true);
+        alert('You will be credited with a reward after subscribing!');
+        window.location.href = linkType === 'first' ? "https://t.me/voco_in" : "https://t.me/VO2CO";
+      } else {
+        alert('You have already received a reward for this task.');
+      }
+    }
+
+    function updateTicketCount() {
+      const ticketCount = parseInt(localStorage.getItem('ticketCount')) || 0;
+      document.getElementById('ticket-count').textContent = ticketCount;
+    }
+
+    window.onload = updateTicketCount;
+
+    function participate() {
+      const ticketCount1 = parseInt(localStorage.getItem('ticketCount1')) || 0;
+      const ticketCount2 = parseInt(localStorage.getItem('ticketCount2')) || 0;
+      const totalTicketCount = ticketCount1 + ticketCount2;
+
+      if (localStorage.getItem('hasParticipated') === 'true') {
+        alert('You have already participated.');
+        return;
+      }
+
+      if (totalTicketCount >= 20) {
+        localStorage.setItem('ticketCount1', ticketCount1 - 10);
+        localStorage.setItem('ticketCount2', ticketCount2 - 10);
+        localStorage.setItem('hasParticipated', 'true');
+        updateTicketCount();
+        alert('You have successfully participated!');
+      } else {
+        alert('You need 20 tickets to participate.');
+      }
+    }
+
+    function openInvoice() {
+      const invoiceLink = "https://t.me/$nPxJ3n-UOEukDgAA8erjOqzO-Vc";
+
+      window.Telegram.WebApp.openInvoice(invoiceLink, (status) => {
+        if (status === "paid") {
+          alert('You have successfully participated!');
+        }
+      });
+    }
   </script>
 
 </body>
