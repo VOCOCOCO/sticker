@@ -228,11 +228,30 @@
     .second-participate-button:hover {
       background-color: #55555569;
     }
+
+    /* Эффект "потянуть вниз" */
+    #pull-refresh {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      display: none;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.7.10/build/player/lottie.min.js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
+
+  <!-- Элемент для эффекта потянуть вниз -->
+  <div id="pull-refresh">Потяните вниз для обновления...</div>
 
   <div class="tab-content" id="tab1">
     <div id="lottie-container"></div>
@@ -285,6 +304,9 @@
     <!-- Черточка -->
     <div class="divider"></div>
 
+    <!-- Фото перед кнопкой "Participate with Payment" -->
+    <img src="photo_2025-04-06_21-31-13.jpg" alt="Additional Photo" style="width: 150px; height: 150px; border-radius: 10px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
+
     <!-- Новая кнопка участия с инвойсом -->
     <div class="second-participate-container">
       <button class="second-participate-button" onclick="openInvoice()">Participate with Payment</button>
@@ -309,6 +331,30 @@
   </div>
 
   <script>
+    // Эффект тягучести
+    let isPulling = false;
+    let startTouchY = 0;
+
+    document.body.addEventListener('touchstart', (e) => {
+      if (window.scrollY === 0) {
+        startTouchY = e.touches[0].pageY;
+      }
+    });
+
+    document.body.addEventListener('touchmove', (e) => {
+      if (startTouchY && e.touches[0].pageY > startTouchY + 50) {
+        isPulling = true;
+        document.getElementById('pull-refresh').style.display = 'flex';
+      }
+    });
+
+    document.body.addEventListener('touchend', () => {
+      if (isPulling) {
+        location.reload();  // Страница обновляется
+      }
+    });
+
+    // Остальной код
     function changeTab(tabNumber) {
       document.querySelectorAll('.tab-content').forEach(function(tab) {
         tab.classList.remove('active');
@@ -396,5 +442,4 @@
 
 </body>
 </html>
-
 
