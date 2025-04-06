@@ -88,11 +88,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      
       padding: 5px 10px;
       border-radius: 5px;
       color: white;
-      
     }
 
     .top-right .number {
@@ -136,6 +134,8 @@
       justify-content: space-between;
       align-items: center;
       margin-top: 20px;
+      cursor: pointer; /* Делаем прямоугольник кнопкой */
+      transition: background-color 0.3s ease;
     }
 
     .join-left {
@@ -144,52 +144,37 @@
     }
 
     .join-left img {
-      width: 30px;
-      height: 30px;
-      margin-right: 10px;
+      width: 50px; /* Сделаем иконку больше */
+      height: 50px;
+      margin-right: 10px; /* Отступ между иконкой и текстом */
     }
 
     .join-title {
       font-size: 20px;
       font-weight: bold;
-      margin-right: 20px;
     }
 
-    .bonus-container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-    }
-
+    /* Прямоугольник с иконкой и текстом 10 справа */
     .bonus-info {
-      font-size: 14px;
-      margin-bottom: 5px;
       display: flex;
       align-items: center;
       background-color: rgba(255, 255, 255, 0.2);
-      padding: 5px;
-      border-radius: 5px;
+      padding: 7px 17px;
+      border-radius: 10px;
+      font-size: 25px;
+      cursor: pointer;
+      margin-left: auto; /* Сдвигаем элемент вправо */
+      transition: background-color 0.3s;
     }
 
     .bonus-info img {
-      width: 15px;
-      height: 15px;
+      width: 26px; /* Размер иконки */
+      height: 26px;
       margin-right: 5px;
     }
 
-    .join-button {
-      background-color: #5a5a5a;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .join-button:hover {
-      background-color: #737373;
+    .bonus-info:hover {
+      background-color: #555; /* Изменение фона при наведении */
     }
   </style>
   <!-- Подключаем Lottie -->
@@ -227,22 +212,18 @@
     </div>
 
     <!-- Прямоугольник с иконкой и кнопкой -->
-    <div class="join-container">
+    <div class="join-container" onclick="giveBonus()">
       <!-- Левая часть: иконка и текст -->
       <div class="join-left">
-        <img src="2900294.png" alt="Icon"> <!-- Иконка слева -->
+        <img src="2900294.png" alt="Icon"> <!-- Иконка слева от текста -->
         <div class="join-title">Join to VOCO</div>
       </div>
 
-      <!-- Правая часть: бонусы и кнопка -->
-      <div class="bonus-container">
-        <div class="bonus-info">
-          <img src="5198231.png" alt="Bonus Icon"> <!-- Иконка для бонуса -->
-          <span>10</span>
-        </div>
+      <!-- Прямоугольник с иконкой и текстом "10" справа -->
+      <div class="bonus-info">
+        <img src="5198231.png" alt="Bonus Icon"> <!-- Иконка для бонуса -->
+        <span>10</span>
       </div>
-
-      <button class="join-button">Start</button>
     </div>
   </div>
   
@@ -266,7 +247,7 @@
 
   <!-- Блок с цифрой и иконкой в верхнем правом углу -->
   <div class="top-right">
-    <div class="number">1</div>
+    <div class="number" id="ticket-count">1</div>
     <img class="icon" src="5198231.png" alt="Icon">
   </div>
 
@@ -290,25 +271,26 @@
     // По умолчанию активировать первую вкладку
     changeTab(1);
 
-    // Получение данных пользователя из Telegram Web Apps API
-    function updateProfile() {
-        if (window.Telegram && Telegram.WebApp) {
-            const user = Telegram.WebApp.initDataUnsafe.user; // Получаем данные пользователя
-            if (user) {
-                // Обновляем имя пользователя
-                document.getElementById("profile-name").textContent = user.first_name || "Имя пользователя";
-                
-                // Обновляем фото профиля, если оно существует
-                if (user.photo_url) {
-                    document.getElementById("profile-pic").src = user.photo_url;
-                }
-            }
-        }
+    // Функция для выдачи бонуса и перехода по ссылке
+    function giveBonus() {
+      let ticketCount = localStorage.getItem('ticketCount') || 0;
+      if (ticketCount < 1) {
+        ticketCount = 10;  // Даем 10 билетов
+        localStorage.setItem('ticketCount', ticketCount);  // Сохраняем в локальное хранилище
+        window.location.href = "https://example.com";  // Переход по ссылке
+      } else {
+        alert('Вы уже получили свои билеты!');
+      }
     }
 
-    // Разворачиваем Telegram Web App и обновляем профиль
-    Telegram.WebApp.ready();
-    updateProfile();
+    // Функция для обновления отображения количества билетов
+    function updateTicketCount() {
+      const ticketCount = localStorage.getItem('ticketCount') || 0;
+      document.getElementById('ticket-count').textContent = ticketCount;
+    }
+
+    // Обновление количества билетов при загрузке страницы
+    window.onload = updateTicketCount;
   </script>
 
 </body>
