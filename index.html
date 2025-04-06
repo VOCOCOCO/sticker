@@ -11,6 +11,8 @@
       background-color: black;
       color: white;
       font-family: Arial, sans-serif;
+      height: 100%;
+      overflow: hidden; /* Для предотвращения прокрутки на всей странице */
     }
 
     .tab-container {
@@ -244,6 +246,11 @@
       font-size: 18px;
       display: none;
     }
+
+    .content-wrapper {
+      overflow-y: scroll;
+      height: 100vh;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.7.10/build/player/lottie.min.js"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -253,81 +260,83 @@
   <!-- Элемент для эффекта потянуть вниз -->
   <div id="pull-refresh">Потяните вниз для обновления...</div>
 
-  <div class="tab-content" id="tab1">
-    <div id="lottie-container"></div>
-    <div class="chapter-text">Soon...</div>
-    <script>
-      const animationUrl = "https://raw.githubusercontent.com/VOCOCOCO/sticker/refs/heads/main/sticker%20(2).json";
+  <div class="content-wrapper">
+    <div class="tab-content" id="tab1">
+      <div id="lottie-container"></div>
+      <div class="chapter-text">Soon...</div>
+      <script>
+        const animationUrl = "https://raw.githubusercontent.com/VOCOCOCO/sticker/refs/heads/main/sticker%20(2).json";
 
-      lottie.loadAnimation({
-        container: document.getElementById('lottie-container'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: animationUrl
-      });
-    </script>
-  </div>
-
-  <div class="tab-content" id="tab2">
-    <div id="profile-container">
-      <img id="profile-pic" src="default_avatar.png" alt="Фото профиля">
-      <div id="profile-name">Загрузка...</div>
+        lottie.loadAnimation({
+          container: document.getElementById('lottie-container'),
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          path: animationUrl
+        });
+      </script>
     </div>
-    <div class="join-container" onclick="giveBonus('first')">
-      <div class="join-left">
-        <img src="4121044.png" alt="Icon">
-        <div class="join-title">Join to VOCO</div>
+
+    <div class="tab-content" id="tab2">
+      <div id="profile-container">
+        <img id="profile-pic" src="default_avatar.png" alt="Фото профиля">
+        <div id="profile-name">Загрузка...</div>
       </div>
-      <div class="bonus-info">
-        <img src="5198231.png" alt="Bonus Icon">
-        <span>10</span>
+      <div class="join-container" onclick="giveBonus('first')">
+        <div class="join-left">
+          <img src="4121044.png" alt="Icon">
+          <div class="join-title">Join to VOCO</div>
+        </div>
+        <div class="bonus-info">
+          <img src="5198231.png" alt="Bonus Icon">
+          <span>10</span>
+        </div>
+      </div>
+
+      <div class="join-container" onclick="giveBonus('second')">
+        <div class="join-left">
+          <img src="4121044.png" alt="Icon">
+          <div class="join-title">Join to VOCO News</div>
+        </div>
+        <div class="bonus-info">
+          <img src="5198231.png" alt="Bonus Icon">
+          <span>10</span>
+        </div>
       </div>
     </div>
 
-    <div class="join-container" onclick="giveBonus('second')">
-      <div class="join-left">
-        <img src="4121044.png" alt="Icon">
-        <div class="join-title">Join to VOCO News</div>
+    <div class="tab-content" id="tab3">
+      <img src="photo_2025-04-06_21-31-13.jpg" alt="Photo">
+      <button class="participate-button" onclick="participate()">Participate</button>
+
+      <!-- Черточка -->
+      <div class="divider"></div>
+
+      <!-- Фото перед кнопкой "Participate with Payment" -->
+      <img src="photo_2025-04-06_21-31-13.jpg" alt="Additional Photo" style="width: 150px; height: 150px; border-radius: 10px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
+
+      <!-- Новая кнопка участия с инвойсом -->
+      <div class="second-participate-container">
+        <button class="second-participate-button" onclick="openInvoice()">Participate with Payment</button>
       </div>
-      <div class="bonus-info">
-        <img src="5198231.png" alt="Bonus Icon">
-        <span>10</span>
+    </div>
+
+    <div class="tab-container">
+      <div class="tab" onclick="changeTab(1)">
+        <img src="6046403.png" alt="Tab 1">
+      </div>
+      <div class="tab" onclick="changeTab(2)">
+        <img src="6798320.png" alt="Tab 2">
+      </div>
+      <div class="tab" onclick="changeTab(3)">
+        <img src="2900294.png" alt="Tab 3">
       </div>
     </div>
-  </div>
 
-  <div class="tab-content" id="tab3">
-    <img src="photo_2025-04-06_21-31-13.jpg" alt="Photo">
-    <button class="participate-button" onclick="participate()">Participate</button>
-
-    <!-- Черточка -->
-    <div class="divider"></div>
-
-    <!-- Фото перед кнопкой "Participate with Payment" -->
-    <img src="photo_2025-04-06_21-31-13.jpg" alt="Additional Photo" style="width: 150px; height: 150px; border-radius: 10px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
-
-    <!-- Новая кнопка участия с инвойсом -->
-    <div class="second-participate-container">
-      <button class="second-participate-button" onclick="openInvoice()">Participate with Payment</button>
+    <div class="top-right">
+      <div class="number" id="ticket-count">1</div>
+      <img class="icon" src="5198231.png" alt="Icon">
     </div>
-  </div>
-
-  <div class="tab-container">
-    <div class="tab" onclick="changeTab(1)">
-      <img src="6046403.png" alt="Tab 1">
-    </div>
-    <div class="tab" onclick="changeTab(2)">
-      <img src="6798320.png" alt="Tab 2">
-    </div>
-    <div class="tab" onclick="changeTab(3)">
-      <img src="2900294.png" alt="Tab 3">
-    </div>
-  </div>
-
-  <div class="top-right">
-    <div class="number" id="ticket-count">1</div>
-    <img class="icon" src="5198231.png" alt="Icon">
   </div>
 
   <script>
