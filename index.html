@@ -315,6 +315,7 @@
       <!-- Фото перед кнопкой "Participate with Payment" -->
       <img src="photo_2025-04-07_16-40-17.jpg" alt="Additional Photo" style="width: 150px; height: 150px; border-radius: 10px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
 
+
       <!-- Новая кнопка участия с инвойсом -->
       <div class="second-participate-container">
         <button class="second-participate-button" onclick="openInvoice()">Participatе</button>
@@ -396,11 +397,11 @@
     updateProfile();
 
     function giveBonus(linkType) {
-      let ticketCount = localStorage.getItem('ticketCount') || 0;
+      let ticketCount = parseInt(localStorage.getItem('ticketCount')) || 0;
       let isBonusClaimed = localStorage.getItem(linkType + 'Claimed') || false;
 
       if (!isBonusClaimed) {
-        ticketCount = parseInt(ticketCount) + 10;
+        ticketCount += 10;
         localStorage.setItem('ticketCount', ticketCount);
         localStorage.setItem(linkType + 'Claimed', true);
         alert('You will be credited with a reward after subscribing!');
@@ -418,18 +419,15 @@
     window.onload = updateTicketCount;
 
     function participate() {
-      const ticketCount1 = parseInt(localStorage.getItem('ticketCount1')) || 0;
-      const ticketCount2 = parseInt(localStorage.getItem('ticketCount2')) || 0;
-      const totalTicketCount = ticketCount1 + ticketCount2;
+      const ticketCount = parseInt(localStorage.getItem('ticketCount')) || 0;
 
       if (localStorage.getItem('hasParticipated') === 'true') {
         alert('You have already participated.');
         return;
       }
 
-      if (totalTicketCount >= 20) {
-        localStorage.setItem('ticketCount1', ticketCount1 - 10);
-        localStorage.setItem('ticketCount2', ticketCount2 - 10);
+      if (ticketCount >= 20) {
+        localStorage.setItem('ticketCount', ticketCount - 20); // Уменьшаем на 20
         localStorage.setItem('hasParticipated', 'true');
         updateTicketCount();
         alert('You have successfully participated!');
