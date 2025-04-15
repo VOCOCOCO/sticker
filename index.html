@@ -218,8 +218,9 @@
       justify-content: center;
       gap: 20px;
       margin-top: 80px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap; /* Отключаем перенос */
     }
+    
 
     .card {
       width: 120px;
@@ -448,9 +449,9 @@
 
     function payAndFlip(cardElement, id) {
       const invoiceLinks = {
-        1: "https://t.me/$JfHw8n5VwEtKCwAAd42cgm5sVys",
-        2: "https://t.me/$JfHw8n5VwEtKCwAAd42cgm5sVys",
-        3: "https://t.me/$JfHw8n5VwEtKCwAAd42cgm5sVys"
+        1: "https://t.me/$j1atTnKhoEtCFQAAbEB0C6-vy78",
+        2: "https://t.me/$j1atTnKhoEtCFQAAbEB0C6-vy78",
+        3: "https://t.me/$j1atTnKhoEtCFQAAbEB0C6-vy78"
       };
 
       if (cardElement.classList.contains('flipped')) return;
@@ -464,5 +465,4 @@
   </script>
 </body>
 </html>
-
 
