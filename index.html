@@ -2,16 +2,77 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Переключение вкладок</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Рулетка и вкладки</title>
+
+  <!-- Подключаемые скрипты -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+  <script src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Стили -->
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background-color: rgb(11, 11, 11);
-      color: white;
-      font-family: Arial, sans-serif;
-    }
+  overflow-y: 1000;
+  margin: 0;
+  padding: 0;
+  background-color: #0d1117;
+  color: white;
+  font-family: Arial, sans-serif;
+
+  /* Для плавной инерции на мобильных */
+  -webkit-overflow-scrolling: touch;
+
+  /* Плавный скролл везде */
+  scroll-behavior: smooth;
+}
+
+/* Кастомизация скроллбара (для десктопа, если нужно) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+
+      #loader {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: #121212;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .spinner {
+        border: 4px solid rgba(255,255,255,0.1);
+        border-top: 4px solid #00bfff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      #app {
+        display: none;
+      }
+    
 
     .tab-container {
       position: fixed;
@@ -20,9 +81,10 @@
       right: 0;
       display: flex;
       justify-content: center;
-      padding: 10px;
+      padding: 7px;
       background-color: #222;
       border-top: 2px solid #444;
+      z-index: 1000;
     }
 
     .tab {
@@ -44,7 +106,7 @@
 
     .tab.active {
       background-color: #95cdff1e;
-      transform: scale(1.1);
+      transform: scale(1.01);
     }
 
     .tab img {
@@ -55,102 +117,491 @@
 
     .tab-content {
       display: none;
-      padding: 40px 20px 80px;
+      padding-bottom: 80px;
     }
 
     .tab-content.active {
       display: block;
     }
 
-    .promo-block {
+    /* Стили для рулетки */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      max-width: 575px;
-      margin: 32px auto 0;
-      border-radius: 12px;
-      overflow: hidden;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-      transition: transform 0.3s;
-    }
-
-    .promo-block:hover {
-      transform: scale(1.02);
-    }
-
-    .promo-block img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .square-image-container {
-      max-width: 575px;
-      margin: 16px auto 0;
+      background: #161b22;
+      padding: 6px 15px;
       display: flex;
-      justify-content: flex-start;
+      align-items: center;
+      z-index: 1000;
+      border-bottom: 1px solid #2e2e2e;
     }
 
-    .square-image-block {
-      width: 40%;
-      height: 40%;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    .top-bar img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      margin-right: 10px;
     }
 
-    .square-image-block img {
+    .top-bar span {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 69px 20px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .news-banner {
       width: 100%;
+      height: 56px;
+      background: linear-gradient(to right, #36bfff, #5e9fff);
+      border-radius: 15.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    .news-banner button {
+      background: white;
+      color: #5e9fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      background: #1c1c1e;
+      border-radius: 16px;
+      padding: 4px;
+      margin-bottom: 12px;
+      gap: 4px;
+    }
+    
+    .mode-option {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      border-radius: 12px;
+      color: white;
+      font-weight: 650; /* или font-weight: bold; */
+      font-size: 15px;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      background: transparent;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    
+    .mode-option:active {
+      transform: none;
+      background: transparent;
+    }
+    
+    .mode-option:focus {
+      outline: none;
+    }
+    
+    .mode-option.active {
+      background: #2c2c2e;
+    }
+    
+  
+    
+    
+    .reel {
+      position: relative;
+      width: 100%;
+      height: 130px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(6px);
+      margin-bottom: 20px;
+    }
+
+    .gifts-wrapper {
+      display: flex;
       height: 100%;
-      object-fit: cover;
+      align-items: center;
+      will-change: transform;
+    }
+
+    .gift {
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      margin: 0 10px;
+    }
+
+    .gift img {
+      max-width: 90px;
+      max-height: 90px;
+    }
+
+    .pointer-line {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 4px;
+      height: 100%;
+      background: rgba(0,200,255,0.5);
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+
+    button#spinButton {
+      background-color: #2ea1f8;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    .extra-button {
       display: block;
+      width: 100%;
+      padding: 11px 24px; /* такой же, как у первой кнопки */
+      background-color: transparent;
+      color: white;
+      font-size: 15px;
+      font-weight: bold; /* как у первой */
+      text-align: center;
+      text-decoration: none;
+      border: 3px solid rgba(255, 255, 255, 0.7); /* контур шире и ярче */
+      border-radius: 9px; /* как у первой кнопки */
+      margin-top:5px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+    
+    .extra-button:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: white;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.908);
+      backdrop-filter: blur(45px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      flex-direction: column;
+    }
+
+    .modal-image {
+      max-width: 90%;
+      max-height: 60%;
+      object-fit: contain;
+      margin-top: -20px;
+      margin-bottom: 15px;
+    }
+
+    .modal h2 {
+      font-size: 24px;
+      color: #00ffcc;
+      margin: 0;
+    }
+
+    .modal button {
+      font-size: 16px;
+      margin-top: 30px;
+      padding: 10px 26px;
+      width: 90%;
+    }
+
+    .swipe-text {
+      font-size: 17px;
+      margin-bottom: 12px;
+      padding-left: 10px;
+      font-weight: bold;
+    }
+
+    .embla {
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .embla__container {
+      display: flex;
+    }
+
+    .embla__slide {
+      flex: 0 0 auto;
+      width: 70px;
+      height: 70px;
+      margin-right: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .embla__slide img {
+      max-width: 60px;
+      max-height: 60px;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      margin: 5% 0 10px;
     }
   </style>
 </head>
 <body>
+  <div id="loader">
+    <div class="spinner"></div>
+  </div>
+  
+  <div id="app">
+    <!-- Вкладка 1 — Рулетка -->
+<div class="tab-content active" id="tab1">
+  <div class="top-bar">
+    <img id="profilePic" src="" alt="Profile Picture">
+    <span id="profileName">User</span>
+  </div>
 
-  <div class="tab-content" id="tab1">
-    <div class="promo-block" onclick="window.open('https://example.com', '_blank')">
-      <img src="photo_2025-05-03_17-25-58.jpg" alt="Promo Image">
+  <div class="container">
+    <div class="news-banner">
+      <span>Check our news!</span>
+      <button onclick="window.location.href='https://t.me/voco_in'">Open @voco_in</button>
     </div>
 
-    <div class="square-image-container">
-      <div class="square-image-block">
-        <img src="icon-192x192.png" alt="Square Image">
+    <div class="mode-selector">
+      <div class="mode-option active" data-price="35" data-link="https://t.me/$zLCg1Xa26UlZDQAA5UvFqNpOjqo">35★</div>
+      <div class="mode-option" data-price="50" data-link="https://t.me/$6k1Z8Ha26UlaDQAAVovivYcjdqU">50★</div>
+      <div class="mode-option" data-price="150" data-link="https://t.me/$SR_sP3a26UlbDQAAvm5lKSwJrGg">150★</div>
+    </div>
+
+    <div class="reel" id="reel">
+      <div class="pointer-line"></div>
+      <div class="gifts-wrapper" id="giftsTrack"></div>
+    </div>
+
+    <button id="spinButton">Try your luck 35★</button>
+    <div class="swipe-roulette-container">
+      <div class="swipe-text">What can I drop?</div>
+      <div class="embla" id="embla">
+        <div class="embla__container" id="emblaTrack"></div>
       </div>
     </div>
   </div>
 
-  <div class="tab-content" id="tab2">
-    <h2>Вкладка 2</h2>
+  <div class="modal" id="modal">
+    <img id="modalImage" class="modal-image" src="nothing_drop.png" alt="Prize image" style="display: none;">
+    <div class="modal-animation" id="modalLottie"></div>
+    <h2>Try your luck next time 🍀</h2>
+    <button id="closeModal">Закрыть</button>
   </div>
 
-  <div class="tab-content" id="tab3">
-    <h2>Вкладка 3</h2>
-  </div>
+  <footer class="footer-text">© 2025 All rights reserved</footer>
+</div>
 
-  <div class="tab-container">
-    <div class="tab" onclick="changeTab(1)">
-      <img src="11163893.png" alt="Tab 1" />
-    </div>
-    <div class="tab" onclick="changeTab(2)">
-      <img src="7179866.png" alt="Tab 2" />
-    </div>
-    <div class="tab" onclick="changeTab(3)">
-      <img src="6446511.png" alt="Tab 3" />
-    </div>
-  </div>
+<!-- Вкладка 2 -->
+<div class="tab-content" id="tab2">
+  <div style="padding: 40px 20px;">Контент для второй вкладки</div>
+</div>
 
-  <script>
-    function changeTab(tabNumber) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.getElementById('tab' + tabNumber).classList.add('active');
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab')[tabNumber - 1].classList.add('active');
+<!-- Переключатель вкладок -->
+<div class="tab-container">
+  <div class="tab" onclick="changeTab(1)">
+    <img src="3664550.png" alt="Tab 1" />
+  </div>
+  <div class="tab">
+    <img src="Монета.png" alt="Tab 2" />
+  </div>
+</div>
+  </div>
+  
+  
+
+<!-- Скрипты -->
+<!-- Обязательно подключите эти библиотеки -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<script src="https://unpkg.com/embla-carousel/embla-carousel.umd.js"></script>
+
+<script>
+  // --- Профиль ---
+  function updateProfile() {
+    if (window.Telegram && Telegram.WebApp) {
+      const user = Telegram.WebApp.initDataUnsafe?.user;
+      if (user) {
+        document.getElementById("profileName").textContent = user.first_name || "User";
+        if (user.photo_url) {
+          document.getElementById("profilePic").src = user.photo_url;
+        }
+      }
     }
+  }
 
-    changeTab(1);
-  </script>
+  // --- Вкладки ---
+  function changeTab(tabNumber) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.getElementById('tab' + tabNumber).classList.add('active');
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab')[tabNumber - 1].classList.add('active');
+  }
+
+  // --- Подарки ---
+  const gifts = [
+    "1CHzB4K5FantEZu.png", "680e5d8f8bf66.png", "toTNAm2yurDAiqK.png", "U8z9ivaScNyJ86V.png",
+    "Oj0IhQW5D5QyVFf.png", "PQM9MVSTAF7sQ12.png", "nothing_drop.png",
+    "pudbsohqxfD98gc.png", "bvK9PmcyFgAh4gP.png", "q2c0eUx5k8krA97.png"
+  ];
+
+  const fullGifts = [];
+  for (let i = 0; i < 10; i++) fullGifts.push(...gifts);
+
+  const giftsTrack = document.getElementById("giftsTrack");
+  fullGifts.forEach(g => {
+    const div = document.createElement("div");
+    div.className = "gift";
+    const img = document.createElement("img");
+    img.src = g;
+    div.appendChild(img);
+    giftsTrack.appendChild(div);
+  });
+
+  // --- Модальное изображение ---
+  const modalImage = document.getElementById("modalImage");
+  modalImage.src = "nothing_drop.png";
+  modalImage.style.display = "block";
+
+  // --- Режимы ---
+  const spinButton = document.getElementById("spinButton");
+  const options = document.querySelectorAll('.mode-option');
+  let selectedLink = "https://t.me/$C4EWW1o_qElQEQAAFie2NIOItOo";
+
+  options.forEach(option => {
+    option.addEventListener('click', () => {
+      options.forEach(o => o.classList.remove('active'));
+      option.classList.add('active');
+      const price = option.getAttribute('data-price');
+      selectedLink = option.getAttribute('data-link');
+      spinButton.textContent = `Try your luck ${price}★`;
+    });
+  });
+
+  // --- Кнопка запуска рулетки ---
+  let spinning = false;
+  spinButton.onclick = () => {
+    if (spinning) return;
+    Telegram.WebApp.openInvoice(selectedLink);
+  };
+
+  // --- После оплаты ---
+  Telegram.WebApp.onEvent("invoiceClosed", function(event) {
+    if (event.status === "paid") {
+      spinning = true;
+      const prize = "nothing_drop.png";
+      const idx = fullGifts.findIndex((v, i) => v === prize) + 5 * gifts.length;
+      const offset = idx * 120 - (document.getElementById("reel").offsetWidth / 2 - 60);
+      gsap.to(giftsTrack, {
+        x: -offset,
+        duration: 6,
+        ease: "power5.inOut",
+        onComplete() {
+          document.getElementById("modal").style.display = "flex";
+          document.getElementById("modalLottie").innerHTML = "";
+          lottie.loadAnimation({
+            container: document.getElementById("modalLottie"),
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: "https://lottie.host/2e7b308e-92b6-495c-a96b-cf93e02eb7b4/BiwZQ7vQaf.json"
+          });
+        }
+      });
+    }
+  });
+
+  // --- Закрытие модального окна ---
+  document.getElementById("closeModal").onclick = () => {
+    document.getElementById("modal").style.display = "none";
+    gsap.set(giftsTrack, { x: 0 });
+    spinning = false;
+  };
+
+  // --- Embla карусель ---
+  const emblaTrack = document.getElementById("emblaTrack");
+  gifts.forEach(g => {
+    const slide = document.createElement("div");
+    slide.className = "embla__slide";
+    const img = document.createElement("img");
+    img.src = g;
+    slide.appendChild(img);
+    emblaTrack.appendChild(slide);
+  });
+
+  EmblaCarousel(document.getElementById("embla"), {
+    loop: false,
+    align: "start",
+    dragFree: true
+  });
+
+  // --- Лоадер ---
+  window.addEventListener('load', function () {
+    const MIN_LOADING_TIME = 1500;
+    const startTime = Date.now();
+
+    const checkReady = () => {
+      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, MIN_LOADING_TIME - elapsed);
+
+        setTimeout(() => {
+          Telegram.WebApp.ready();
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('app').style.display = 'block';
+        }, remaining);
+      } else {
+        setTimeout(checkReady, 100);
+      }
+    };
+
+    checkReady();
+  });
+
+  // --- Инициализация ---
+  updateProfile();
+  changeTab(1);
+</script>
+
+
+
+  
 </body>
-</html>
-
-
+</html>     
