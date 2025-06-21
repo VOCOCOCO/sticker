@@ -377,13 +377,39 @@
       text-align: center;
       margin: 5% 0 10px;
     }
+
+    #marketModal h2 {
+  color: white;
+  margin-bottom: 12px;
+}
+
+#marketModal p {
+  color: #ccc;
+  margin-bottom: 25px;
+}
+
+#marketModal button {
+  background-color: #2ea1f8;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
   </style>
 </head>
 <body>
   <div id="loader">
     <div class="spinner"></div>
   </div>
-  
+  <div class="modal" id="marketModal" style="display: flex;">
+  <h2>To continue, open the Market</h2>
+  <p style="max-width: 90%; text-align: center; font-size: 15px;">To use this feature, you need to visit the Market at least once during this session.</p>
+  <button onclick="goToMarket()">Go to Market</button>
+</div>
   <div id="app">
     <!-- Вкладка 1 — Рулетка -->
 <div class="tab-content active" id="tab1">
@@ -594,6 +620,17 @@
 
     checkReady();
   });
+
+  function goToMarket() {
+  document.getElementById("marketModal").style.display = "none";
+  window.location.href = "https://t.me/voco_market"; // <-- замени на нужный Market
+}
+
+// Показываем модальное окно сразу при запуске
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("marketModal").style.display = "flex";
+});
+
 
   // --- Инициализация ---
   updateProfile();
