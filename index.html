@@ -3,434 +3,175 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Turbo Gifts — modal full-screen</title>
+<title>Turbo Gifts — stickers & TON Connect</title>
 
 <!-- Telegram Web Apps SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<!-- lottie-web для .json -->
+
+<!-- lottie-web (.json) -->
 <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
-<!-- rlottie (для .tgs) -->
+<!-- rlottie (.tgs) -->
 <script src="https://cdn.jsdelivr.net/npm/rlottie@2.6.0/dist/rlottie.min.js"></script>
-<!-- GSAP для плавной анимации скрытия/появления -->
+<!-- GSAP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<!-- TON Connect UI (официальная модалка выбора кошельков) -->
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <style>
 :root{
   --bg:#0f1116;
   --bg-soft:#151822;
-  --card-bg:#1a1e2a;
   --text:#ffffff;
   --muted:#c8cdd6;
   --accent-blue-start:#3abefc;
   --accent-blue-end:#6aa8ff;
-  --gold:#FFD14B;
   --radius:18px;
   --card-footer-h:56px;
   --tab-size:46px;
   --shadow: 0 10px 30px rgba(0,0,0,.35);
 }
-
 /* Reset */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, "SF Pro", Arial, sans-serif;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+  margin:0; background:var(--bg); color:var(--text);
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Inter,"SF Pro",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   line-height:1.35;
 }
 
-/* --- App container --- */
-.app{
-  max-width: 560px;
-  margin: 0 auto;
-  min-height: 100vh;
-  padding-bottom: calc(var(--tab-size) + 28px);
-}
+/* App */
+.app{ max-width:560px; margin:0 auto; min-height:100vh; padding-bottom:calc(var(--tab-size) + 28px); }
 
-/* --- Topbar --- */
+/* Topbar */
 .topbar{
-  position: sticky;
-  top:0;
-  z-index:40;
-  padding: 6px 12px;
-  background: linear-gradient(180deg, rgba(15,17,22,.98), rgba(15,17,22,.92) 70%, rgba(15,17,22,0));
-  border-bottom: 1px solid rgba(255,255,255,.04);
-  backdrop-filter: blur(6px);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  position:sticky; top:0; z-index:40; padding:6px 12px;
+  background:linear-gradient(180deg, rgba(15,17,22,.98), rgba(15,17,22,.92) 70%, rgba(15,17,22,0));
+  border-bottom:1px solid rgba(255,255,255,.04); backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
 }
-.profile{ display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
-.avatar{
-  width:40px; height:40px; border-radius:50%;
-  background:#222; background-position:center; background-size:cover;
-  border:2px solid #303544; flex-shrink:0;
-}
+.profile{ display:flex; align-items:center; gap:8px; min-width:0; }
+.avatar{ width:40px; height:40px; border-radius:50%; background:#222 center/cover; border:2px solid #303544; flex-shrink:0; }
 .name{ font-weight:700; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* --- Wallet button in top-right (like on photo) --- */
-.wallet-wrap{
-  display:flex; align-items:center; gap:8px;
-  margin-left:8px;
-}
+/* Wallet (top-right) */
+.wallet-wrap{ display:flex; align-items:center; gap:8px; }
 .wallet-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  background: linear-gradient(90deg,var(--accent-blue-start),var(--accent-blue-end));
-  color:white;
-  font-weight:800;
-  padding:10px 14px;
-  border-radius:28px;
-  box-shadow: 0 6px 18px rgba(30,110,200,0.22);
-  cursor:pointer;
-  border:0;
-  font-size:14px;
+  display:inline-flex; align-items:center; gap:8px; border:0; cursor:pointer;
+  padding:10px 14px; border-radius:14px;
+  background:linear-gradient(90deg,var(--accent-blue-start),var(--accent-blue-end));
+  color:#fff; font-weight:900; box-shadow:0 8px 22px rgba(32,120,255,.25);
 }
-.wallet-btn .addr{ font-weight:800; white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; display:inline-block; vertical-align:middle; }
-.wallet-btn .caret{ width:14px; height:14px; display:inline-block; transform:translateY(1px); }
+.wallet-btn.disconnected{ background:linear-gradient(90deg,#2b3345,#3b4257); color:#cbd6ee; box-shadow:none; }
+.wallet-btn .addr{ max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wallet-caret{ width:14px; height:14px; opacity:.9; }
+.wallet-menu{
+  position:absolute; right:12px; top:56px; z-index:50; display:none;
+  background:#121622; border:1px solid #252b3d; border-radius:12px; padding:6px; min-width:160px;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+.wallet-menu.open{ display:block; }
+.wallet-menu button{
+  width:100%; background:transparent; border:0; color:#eaeefc; text-align:left; padding:10px 12px; border-radius:10px; font-weight:700; cursor:pointer;
+}
+.wallet-menu button:hover{ background:#1a2030; }
 
-/* when disconnected */
-.wallet-btn.disconnected{
-  background: linear-gradient(90deg,#2b3345,#3a4050);
-  color:#cbd6ee;
-}
+/* Banner */
+.banner{ margin:12px 14px; padding:13px 12px; border-radius:14px; background:linear-gradient(90deg,#3abefc,#6aa8ff); display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
+.banner .title{ font-weight:800; font-size:15px; margin:0 8px; }
+.banner .btn{ background:#fff; color:#09b5ff; font-weight:700; padding:6px 10px; border-radius:12px; text-decoration:none; font-size:13px; display:inline-flex; align-items:center; gap:8px; }
 
-/* --- Banner --- */
-.banner{
-  margin:12px 14px;
-  padding: 13px 12px;
-  border-radius: 14px;
-  background: linear-gradient(90deg, var(--accent-blue-start), var(--accent-blue-end));
-  display:flex; align-items:center; justify-content:space-between;
-  box-shadow: var(--shadow);
-}
-.banner .title{ font-weight:800; font-size:15px; margin:0px 8px; }
-.banner .btn{
-  background: #fff;
-  color: #09b5ff;
-  font-weight:700;
-  padding:6px 10px;
-  border-radius:12px;
-  text-decoration:none;
-  font-size:13px;
-  display:inline-flex; align-items:center; gap:8px;
-  margin:0px 7px;
-}
-
-/* --- Toggle --- */
-.toggle{
-  margin: 10px 14px 0;
-  padding: 12px 14px;
-  background: var(--bg-soft);
-  border:1px solid #222838;
-  border-radius: 16px;
-  display:flex; align-items:center; gap:12px;
-}
-.toggle input{
-  appearance:none; width:22px;height:22px;border-radius:6px;
-  border:2px solid #556079; display:grid; place-items:center;
-  background:#0f1116;
-}
+/* Toggle */
+.toggle{ margin:10px 14px 0; padding:12px 14px; background:var(--bg-soft); border:1px solid #222838; border-radius:16px; display:flex; align-items:center; gap:12px; }
+.toggle input{ appearance:none; width:22px; height:22px; border-radius:6px; border:2px solid #556079; display:grid; place-items:center; background:#0f1116; }
 .toggle input:checked{ background:#1f283b; border-color:#6aa8ff; }
 .toggle input:checked::after{ content:"✓"; color:#a8c9ff; font-size:14px; line-height:1; }
-.toggle label{ color: var(--text); font-weight:600; cursor:pointer; user-select:none; }
+.toggle label{ color:var(--text); font-weight:600; user-select:none; }
 
-/* --- Grid --- */
-.grid{
-  display:grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap:14px;
-  padding: 14px;
-  justify-items:center;
-  align-items:start;
-}
+/* Grid */
+.grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; justify-items:center; align-items:start; }
 
-/* --- Card (market) --- */
+/* Market card */
 .card{
-  position:relative;
-  overflow:hidden;
-  border-radius:16px;
+  position:relative; overflow:hidden; border-radius:16px;
   background: radial-gradient(120% 120% at 0% 0%, #20263a 0%, #1a1f2d 40%, #161b28 100%);
-  border:1px solid #262c41;
-  width:100%;
-  max-width: 260px;
-  height: 260px;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  box-shadow: var(--shadow);
-  transition: transform .12s ease;
-  cursor:pointer;
+  border:1px solid #262c41; width:100%; max-width:260px; height:260px;
+  display:flex; flex-direction:column; justify-content:flex-end; box-shadow:var(--shadow); transition:transform .12s ease; cursor:pointer;
 }
-@media (max-width:420px){
-  .card{ height: 200px; }
-}
-.card:active{ transform: translateY(1px); }
-
-.card .media{
-  position: absolute;
-  left:0; right:0; top:0;
-  height: calc(100% - var(--card-footer-h));
-  display:flex; align-items:center; justify-content:center;
-  padding: 14px;
-}
+@media (max-width:420px){ .card{ height:200px; } }
+.card:active{ transform:translateY(1px); }
+.card .media{ position:absolute; left:0; right:0; top:0; height:calc(100% - var(--card-footer-h)); display:flex; align-items:center; justify-content:center; padding:14px; }
 .media canvas, .media svg, .media img, .media div{ max-width:100%; max-height:100%; }
+.card .footer{ height:var(--card-footer-h); display:flex; align-items:center; justify-content:center; padding:10px 14px; background:linear-gradient(180deg, rgba(11,13,18,.35), rgba(11,13,18,.55)); border-top:1px solid rgba(255,255,255,.03); backdrop-filter:blur(4px); }
+.card .footer .price{ display:inline-flex; align-items:center; gap:8px; background:linear-gradient(180deg, rgba(255,210,75,.14), rgba(255,195,45,.14)); padding:6px 13px; border-radius:16px; color:#51ff00d2; font-weight:700; font-size:15px; box-shadow:0 6px 16px rgba(0,0,0,.22); }
+.price-icon{ width:16px; height:16px; object-fit:contain; border-radius:3px; }
 
-.card .footer{
-  height: var(--card-footer-h);
-  display:flex; align-items:center; justify-content:center;
-  position:relative;
-  padding: 10px 14px;
-  background: linear-gradient(180deg, rgba(11,13,18,.35), rgba(11,13,18,.55));
-  border-top: 1px solid rgba(255,255,255,.03);
-  backdrop-filter: blur(4px);
-}
-.card .footer .price {
-  display:inline-flex; align-items:center; gap:8px;
-  background: linear-gradient(180deg, rgba(255, 210, 75, 0.140), rgba(255, 195, 45, 0.140));
-  padding:6px 13px; border-radius:16px;
-  color:#51ff00d2; font-weight:700; font-size:15px;
-  box-shadow: 0 6px 16px rgba(0,0,0,.22);
-}
-.price-icon { width:16px; height:16px; object-fit:contain; border-radius:3px; }
+/* Ribbons */
+.ribbon{ position:absolute; top:10px; right:-22px; width:120px; height:26px; display:flex; align-items:center; justify-content:center; transform:rotate(35deg); background:#ff4d4f; color:#fff; font-weight:700; font-size:12px; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,.25); pointer-events:none; line-height:1; padding:0 8px; white-space:nowrap; }
+.ribbon.sold{ background:linear-gradient(180deg,#ff8a95,#e64655); }
+.ribbon.stock{ background:linear-gradient(90deg,#66c2ff,#3aa6ff); }
 
-/* --- Ribbon (compact, centered text) --- */
-.ribbon {
-  position: absolute;
-  top: 10px;
-  right: -22px;
-  width: 120px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: rotate(35deg);
-  transform-origin: center;
-  background-color: #ff4d4f;
-  color: #fff;
-  font-weight: 700;
-  font-size: 12px;
-  border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
-  pointer-events: none;
-  line-height: 1;
-  padding: 0 8px;
-  white-space: nowrap;
-}
-.ribbon.sold { background: linear-gradient(180deg, #ff8a95, #e64655); }
-.ribbon.stock { background: linear-gradient(90deg,#66c2ff,#3aa6ff); }
+/* Tabbar */
+.tabbar{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:flex; justify-content:center; align-items:center; padding:8px 10px; background:linear-gradient(0deg, rgba(15,17,22,1), rgba(15,17,22,.96)); border-top:1px solid rgba(255,255,255,.03); }
+.tabs{ width:min(560px,100%); display:flex; gap:12px; justify-content:center; }
+.tab{ width:var(--tab-size); height:var(--tab-size); border-radius:12px; background:#111523; border:1px solid #252b3d; display:grid; place-items:center; cursor:pointer; box-shadow:0 8px 18px rgba(0,0,0,.25); transition:transform .08s; overflow:hidden; }
+.tab img{ width:20px; height:20px; object-fit:contain; display:block; }
+.tab.active{ outline:2px solid #3f69ff55; transform:translateY(-2px); }
 
-/* --- Tabbar --- */
-.tabbar{
-  position: fixed; left:0; right:0; bottom:0; z-index:60;
-  display:flex; justify-content:center; align-items:center;
-  padding:8px 10px; background: linear-gradient(0deg, rgba(15,17,22,1), rgba(15,17,22,.96));
-  border-top:1px solid rgba(255,255,255,.03);
-}
-.tabs{
-  width:min(560px, 100%); display:flex; gap:12px; justify-content:center;
-}
-.tab{
-  width: var(--tab-size); height: var(--tab-size);
-  border-radius:12px; background:#111523; border:1px solid #252b3d;
-  display:grid; place-items:center; cursor:pointer;
-  box-shadow: 0 8px 18px rgba(0,0,0,.25);
-  transition: transform .08s;
-  overflow:hidden;
-}
-.tab img{ width:20px; height:20px; object-fit:contain; pointer-events:none; display:block }
-.tab.active{ outline:2px solid #3f69ff55; transform: translateY(-2px); }
-
-/* ========= FULLSCREEN MODAL ========= */
-.overlay, .purchase-overlay{
-  position: fixed; inset:0; z-index:2000; display:none;
-  align-items: center; justify-content: center;
-  background: rgba(6,8,10,0.95); backdrop-filter: blur(6px);
-}
-.overlay.open, .purchase-overlay.open{ display:flex; }
-
-.modal-card{
-  width:100%; height:100%; max-height:100vh;
-  background: linear-gradient(180deg,#0f1116,#0b0d10);
-  border-radius:0;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  padding-bottom:16px;
-}
-.modal-top{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid rgba(255,255,255,0.03); }
-.modal-title { font-weight:800; font-size:20px; }
-.modal-close { background:transparent; border:0; color:var(--muted); font-weight:700; cursor:pointer; font-size:16px; }
-
-.modal-body{ flex:1; display:flex; align-items:center; justify-content:center; padding: 8px; overflow:auto; }
-
-/* --> SQUARE area for gift inside modal */
-.modal-media-wrap{
-  width:95%; max-width:520px;
-  aspect-ratio: 1 / 1;
-  display:flex; align-items:center; justify-content:center;
-  border-radius:14px;
-  background: linear-gradient(180deg, rgba(20,22,28,0.45), rgba(8,9,12,0.35));
-  border:1px solid rgba(255,255,255,0.03);
-  box-shadow: 0 20px 60px rgba(0,0,0,.6);
-  overflow:hidden;
-}
+/* Overlays & Modals */
+.overlay,.purchase-overlay{ position:fixed; inset:0; z-index:2000; display:none; align-items:center; justify-content:center; background:rgba(6,8,10,.95); backdrop-filter:blur(6px); }
+.overlay.open,.purchase-overlay.open{ display:flex; }
+.modal-card{ width:100%; height:100%; max-height:100vh; background:linear-gradient(180deg,#0f1116,#0b0d10); border-radius:0; display:flex; flex-direction:column; overflow:hidden; padding-bottom:16px; }
+.modal-top{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.03); }
+.modal-title{ font-weight:800; font-size:20px; }
+.modal-close{ background:transparent; border:0; color:var(--muted); font-weight:700; cursor:pointer; font-size:16px; }
+.modal-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:8px; overflow:auto; }
+.modal-media-wrap{ width:95%; max-width:520px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:14px; background:linear-gradient(180deg, rgba(20,22,28,.45), rgba(8,9,12,.35)); border:1px solid rgba(255,255,255,.03); box-shadow:0 20px 60px rgba(0,0,0,.6); overflow:hidden; }
 .modal-media{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:8px; }
-
-.modal-bottom{
-  padding:18px 16px; display:flex; flex-direction:column; gap:8px;
-}
+.modal-bottom{ padding:18px 16px; display:flex; flex-direction:column; gap:8px; }
 .price-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.price-pill{
-  display:inline-flex; align-items:center; gap:10px;
-  background: linear-gradient(180deg, rgba(255, 210, 75, 0.140), rgba(255, 195, 45, 0.140));
-  color:#51ff00d2; padding:10px 14px; border-radius:16px; font-weight:650; font-size:17px; box-shadow: 0 8px 20px rgba(0,0,0,.35);
-}
+.price-pill{ display:inline-flex; align-items:center; gap:10px; background:linear-gradient(180deg, rgba(255,210,75,.14), rgba(255,195,45,.14)); color:#51ff00d2; padding:10px 14px; border-radius:16px; font-weight:650; font-size:17px; box-shadow:0 8px 20px rgba(0,0,0,.35); }
 .modal-actions{ display:flex; gap:12px; flex-direction:column; }
-.btn-ghost{
-  background: rgba(255,255,255,0.06); color:#fff; padding:14px; border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,0.03); font-weight:800; text-decoration:none;
-}
-.btn-primary{
-  background: linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; text-align:center; font-weight:900; text-decoration:none;
-}
+.btn-ghost{ background:rgba(255,255,255,.06); color:#fff; padding:14px; border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,.03); font-weight:800; text-decoration:none; }
+.btn-primary{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; text-align:center; font-weight:900; text-decoration:none; }
 
-/* PURCHASE FULLSCREEN */
-.purchase-card{
-  width:100%; height:100%; max-height:100vh;
-  background: linear-gradient(180deg,#0b0d11,#0e1114);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px;
-}
+/* Purchase + Success */
+.purchase-card{ width:100%; height:100%; max-height:100vh; background:linear-gradient(180deg,#0b0d11,#0e1114); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
 .purchase-media{ width:95%; height:65%; display:flex; align-items:center; justify-content:center; }
-.purchase-close{
-  margin-top:auto; width:95%; max-width:720px; text-align:center;
-  background: #2fa6ff; color:#fff; padding:16px; border-radius:12px; font-weight:900; cursor:pointer;
-}
-
-/* --- SUCCESS FULLSCREEN (added) --- */
-.success-overlay{
-  position: fixed; inset:0; z-index:3000; display:none;
-  align-items: center; justify-content: center;
-  background: rgba(8,10,12,0.96);
-  backdrop-filter: blur(6px);
-}
+.purchase-close{ margin-top:auto; width:95%; max-width:720px; text-align:center; background:#2fa6ff; color:#fff; padding:16px; border-radius:12px; font-weight:900; cursor:pointer; }
+.success-overlay{ position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; background:rgba(8,10,12,.96); backdrop-filter:blur(6px); }
 .success-overlay.open{ display:flex; }
-
-.success-card{
-  width:100%; max-width:720px; height:100%; max-height:100vh;
-  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-  padding:24px; box-sizing:border-box;
-}
-.success-inner{
-  margin-top:36px;
-  width:min(520px,95%);
-  background: linear-gradient(180deg, rgba(20,22,28,0.55), rgba(10,11,13,0.35));
-  border-radius:16px;
-  padding:20px;
-  display:flex; flex-direction:column; align-items:center; gap:14px;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
-}
-.success-media{
-  width:70%; max-width:420px;
-  aspect-ratio: 1 / 1;
-  display:flex; align-items:center; justify-content:center;
-  border-radius:12px;
-  background: linear-gradient(180deg, rgba(5,7,9,0.2), rgba(8,9,10,0.12));
-  border:1px solid rgba(255,255,255,0.03);
-  overflow:hidden;
-}
+.success-card{ width:100%; max-width:720px; height:100%; max-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:24px; }
+.success-inner{ margin-top:36px; width:min(520px,95%); background:linear-gradient(180deg, rgba(20,22,28,.55), rgba(10,11,13,.35)); border-radius:16px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); }
+.success-media{ width:70%; max-width:420px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:12px; background:linear-gradient(180deg, rgba(5,7,9,.2), rgba(8,9,10,.12)); border:1px solid rgba(255,255,255,.03); overflow:hidden; }
 .success-title{ font-size:22px; font-weight:900; margin-top:6px; text-align:center; }
 .success-sub{ color:var(--muted); font-size:13px; text-align:center; margin-bottom:6px; }
+.success-close-full{ position:absolute; bottom:18px; left:50%; transform:translateX(-50%); width:calc(100% - 36px); max-width:720px; background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; font-weight:900; text-align:center; cursor:pointer; box-shadow:0 12px 30px rgba(20,80,160,.18); }
 
-.success-close-full{
-  position: absolute;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 36px);
-  max-width:720px;
-  background: linear-gradient(90deg,#2fa6ff,#1a73ff);
-  color:#fff;
-  padding:16px;
-  border-radius:12px;
-  font-weight:900;
-  text-align:center;
-  cursor:pointer;
-  box-shadow: 0 12px 30px rgba(20,80,160,0.18);
-}
-
-/* Tab 3 layout: profile + purchased grid */
-.tab3-wrapper{
-  padding: 16px;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
+/* Tab 3 (profile + purchased) */
+.tab3-wrapper{ padding:16px; display:none; flex-direction:column; align-items:center; gap:12px; }
 .tab3-wrapper.open{ display:flex; }
-
-.tab3-profile{
-  display:flex; flex-direction:column; align-items:center; gap:8px;
-  margin-top: 6px;
-}
-.tab3-profile .big-avatar{
-  width:84px; height:84px; border-radius:50%; background:#222; background-position:center; background-size:cover; border:3px solid #303544;
-}
+.tab3-profile{ display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:6px; }
+.tab3-profile .big-avatar{ width:84px; height:84px; border-radius:50%; background:#222 center/cover; border:3px solid #303544; }
 .tab3-profile .profile-name{ font-weight:800; font-size:18px; }
+.separator{ width:90%; height:1px; background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); margin:4px 0 8px; border-radius:2px; }
 
-.separator{
-  width:90%; height:1px; background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-  margin: 4px 0 8px 0;
-  border-radius:2px;
-}
-
-/* purchased gifts grid — карточки выглядят как в маркете, но чуть меньше */
-.purchased-grid{
-  width:100%;
-  display:grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap:10px;
-  padding: 0 10px 30px 10px;
-  box-sizing:border-box;
-}
+/* Purchased cards — как в маркете, но меньше */
+.purchased-grid{ width:100%; display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:0 10px 30px; box-sizing:border-box; }
 .purchased-card{
-  /* reuse market styles but smaller */
-  position:relative;
-  overflow:hidden;
-  border-radius:14px;
+  position:relative; overflow:hidden; border-radius:14px;
   background: radial-gradient(120% 120% at 0% 0%, #1f2535 0%, #161a26 40%, #0f1116 100%);
-  border:1px solid #232734;
-  width:100%;
-  max-width: 220px;
-  height: 220px;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  box-shadow: 0 10px 28px rgba(0,0,0,.4);
-  transition: transform .12s ease;
-  cursor:pointer;
+  border:1px solid #232734; width:100%; max-width:220px; height:220px;
+  display:flex; flex-direction:column; justify-content:flex-end; box-shadow:0 10px 28px rgba(0,0,0,.4); transition:transform .12s ease; cursor:pointer;
 }
-.purchased-card .media{ position: absolute; left:0; right:0; top:0; height: calc(100% - 44px); display:flex; align-items:center; justify-content:center; padding:10px; }
-.purchased-card .footer{ height:44px; display:flex; align-items:center; justify-content:center; width:100%; background:transparent; border-top:1px solid rgba(255,255,255,0.02);}
+.purchased-card .media{ position:absolute; left:0; right:0; top:0; height:calc(100% - 44px); display:flex; align-items:center; justify-content:center; padding:10px; }
+.purchased-card .footer{ height:44px; display:flex; align-items:center; justify-content:center; width:100%; background:transparent; border-top:1px solid rgba(255,255,255,.02); }
 
-/* disabled Improve button (non-functional) */
-.btn-upgrade{
-  background: linear-gradient(90deg,#2fa6ff,#1a73ff);
-  color:#fff; padding:12px; border-radius:10px; font-weight:800; text-decoration:none; text-align:center;
-}
-.btn-upgrade.disabled{ opacity:0.36; filter:saturate(.6); pointer-events:none; }
-
-/* helpers */
-.hidden { display:none !important; }
+.hidden{ display:none !important; }
 .lottie-placeholder{ color:var(--muted); font-size:13px; text-align:center; padding:8px }
 
 @media (max-width:420px){
-  .modal-media-wrap{ max-width: 92%; }
-  .purchased-card{ height:180px; max-width: 48%; }
+  .purchased-card{ height:180px; max-width:48%; }
   .success-media{ width:88%; }
 }
 </style>
@@ -439,26 +180,29 @@ body{
   <div class="app" id="mainApp">
     <!-- Topbar -->
     <div class="topbar">
-      <div class="profile" aria-hidden="false">
+      <div class="profile">
         <div id="avatar" class="avatar" aria-hidden="true"></div>
         <div id="userName" class="name">User</div>
       </div>
 
-      <!-- Wallet connect (top-right) -->
-      <div class="wallet-wrap" aria-hidden="false">
-        <button id="walletBtn" class="wallet-btn disconnected" aria-label="Подключить TON кошелек" title="Подключить TON кошелек">
-          <span class="addr" id="walletLabel">Connect TON</span>
-          <svg class="caret" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M6 9l6 6 6-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Wallet connect (top-right like on photo) -->
+      <div class="wallet-wrap">
+        <button id="walletBtn" class="wallet-btn disconnected" aria-label="Connect TON wallet">
+          <span id="walletLabel" class="addr">Connect TON</span>
+          <svg class="wallet-caret" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
+        <div id="walletMenu" class="wallet-menu" role="menu" aria-hidden="true">
+          <button id="disconnectBtn">Disconnect</button>
+        </div>
       </div>
     </div>
 
     <!-- Banner -->
-    <div class="banner" role="region" aria-label="banner">
+    <div class="banner">
       <div class="title">Check our news!</div>
-      <a id="bannerBtn" class="btn" href="https://example.com" target="_blank" rel="noopener noreferrer">Open Gifts</a>
+      <a id="bannerBtn" class="btn" href="https://example.com" target="_blank" rel="noopener">Open Gifts</a>
     </div>
 
     <!-- Toggle -->
@@ -467,7 +211,7 @@ body{
       <label for="hideSold">Скрыть проданные подарки</label>
     </div>
 
-    <!-- Grid -->
+    <!-- Grid (market) -->
     <div class="grid" id="cardsGrid" aria-live="polite">
       <article class="card" id="card1" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Cute sticker — 1 из 100">
         <div class="ribbon stock" aria-hidden="true">1 из 100</div>
@@ -475,37 +219,32 @@ body{
           <div class="lottie-placeholder">Lottie animation 1</div>
         </div>
         <div class="footer">
-          <div class="price">
-            <img src="stars-DBKMczxe.png" alt="icon" class="price-icon">
-            <span class="price-value">10</span>
-          </div>
+          <div class="price"><img src="stars-DBKMczxe.png" alt="icon" class="price-icon"><span class="price-value">10</span></div>
         </div>
       </article>
+
       <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Dog sticker — 1 из 50">
         <div class="ribbon stock" aria-hidden="true">1 из 50</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/002_DOG%20(1).json">
           <div class="lottie-placeholder">Lottie animation 2</div>
         </div>
         <div class="footer">
-          <div class="price">
-            <img src="stars-DBKMczxe.png" alt="icon" class="price-icon">
-            <span class="price-value">25</span>
-          </div>
+          <div class="price"><img src="stars-DBKMczxe.png" alt="icon" class="price-icon"><span class="price-value">25</span></div>
         </div>
       </article>
     </div>
   </div>
 
   <!-- Tabbar -->
-  <nav class="tabbar" role="navigation" aria-label="Основная навигация">
+  <nav class="tabbar" aria-label="Навигация">
     <div class="tabs" role="tablist">
-      <div class="tab active" role="tab" aria-selected="true" id="tab1" title="Tab 1">
+      <div class="tab active" role="tab" aria-selected="true" id="tab1" title="Маркет">
         <img src="stars-DBKMczxe.png" alt="tab1 icon">
       </div>
       <div class="tab" role="tab" aria-selected="false" id="tab2" title="Tab 2">
         <img src="https://dummyimage.com/64x64/2b3345/ffffff&text=2" alt="tab2 icon">
       </div>
-      <div class="tab" role="tab" aria-selected="false" id="tab3" title="Inventory" >
+      <div class="tab" role="tab" aria-selected="false" id="tab3" title="Инвентарь">
         <img src="https://dummyimage.com/64x64/2b3345/ffffff&text=3" alt="tab3 icon">
       </div>
     </div>
@@ -517,24 +256,20 @@ body{
       <div id="bigAvatar" class="big-avatar" aria-hidden="true"></div>
       <div id="bigName" class="profile-name">User</div>
     </div>
-    <div class="separator" role="separator" aria-hidden="true"></div>
-    <div id="purchasedGrid" class="purchased-grid" aria-live="polite">
-      <!-- purchased cards injected here -->
-    </div>
+    <div class="separator" aria-hidden="true"></div>
+    <div id="purchasedGrid" class="purchased-grid" aria-live="polite"></div>
   </div>
 
-  <!-- FULLSCREEN ITEM MODAL -->
+  <!-- ITEM MODAL -->
   <div id="itemOverlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card" role="document" aria-label="Детали подарка">
       <div class="modal-top">
         <div class="modal-title" id="modalTitle">Подарок</div>
-        <button id="modalCloseBtn" class="modal-close" aria-label="Закрыть модалку">✕</button>
+        <button id="modalCloseBtn" class="modal-close" aria-label="Закрыть">✕</button>
       </div>
 
       <div class="modal-body">
-        <div class="modal-media-wrap">
-          <div id="modalLottie" class="modal-media"></div>
-        </div>
+        <div class="modal-media-wrap"><div id="modalLottie" class="modal-media"></div></div>
       </div>
 
       <div class="modal-bottom">
@@ -548,10 +283,8 @@ body{
 
         <div class="modal-actions">
           <a id="modalBuyStars" class="btn-ghost" href="#" target="_blank" rel="noopener noreferrer">Купить звёзды ★</a>
-          <!-- buy button (visible for not-yet-purchased items) -->
           <a id="modalBuyGift" class="btn-primary" href="#" target="_blank" rel="noopener noreferrer">Купить подарок — ★ <span id="modalBuyPrice">15</span></a>
-
-          <!-- upgrade button (appears for purchased items) - we'll hide it on purchased item open -->
+          <!-- «Улучшить» будет скрываться для купленных -->
           <div id="modalUpgradeWrap" class="">
             <a id="modalUpgrade" class="btn-upgrade disabled">Улучшить</a>
           </div>
@@ -560,7 +293,7 @@ body{
     </div>
   </div>
 
-  <!-- PURCHASE FULLSCREEN (kept for compatibility) -->
+  <!-- PURCHASE (legacy) -->
   <div id="purchaseOverlay" class="purchase-overlay" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="purchase-card" role="document" aria-label="Куплено">
       <div id="purchasedMedia" class="purchase-media"></div>
@@ -568,10 +301,10 @@ body{
     </div>
   </div>
 
-  <!-- SUCCESS FULLSCREEN (new) -->
+  <!-- SUCCESS -->
   <div id="successOverlay" class="success-overlay" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="success-card" role="document" aria-label="Подарок куплен">
-      <div class="success-inner" role="presentation">
+      <div class="success-inner">
         <div id="successMedia" class="success-media" aria-hidden="true"></div>
         <div class="success-title">Подарок куплен!</div>
         <div class="success-sub">Ваш подарок находится в профиле</div>
@@ -582,76 +315,83 @@ body{
 
 <script>
 /* ===========================
-  Дополнения:
-  - TOP-RIGHT: роль кнопки "Подключить TON-кошелек" (имитация)
-  - Вкладка "Инвентарь": карточки выглядят как на маркете, но чуть меньше.
-  - При открытии купленной карточки: кнопка "Улучшить" скрывается полностью.
-  - Всё в одном файле.
-  =========================== */
+   1) TON Connect UI — реальное подключение кошелька
+   2) Инвентарь: карточки меньше, "Улучшить" скрывается при просмотре купленного
+   3) Остальной функционал как раньше
+=========================== */
 
-/* ---------- Wallet mock: top-right ---------- */
-const WALLET_KEY = 'turbo_gifts_ton_wallet_v1';
-const walletBtn = document.getElementById('walletBtn');
+/* ----------- TON Connect: инициализация ----------- */
+const walletBtn   = document.getElementById('walletBtn');
 const walletLabel = document.getElementById('walletLabel');
+const walletMenu  = document.getElementById('walletMenu');
+const disconnectBtn = document.getElementById('disconnectBtn');
 
-function truncateAddr(addr){
-  if(!addr) return 'Connect TON';
-  if(addr.length <= 10) return addr;
-  return addr.slice(0,4) + '…' + addr.slice(-4);
-}
+function truncateAddr(addr){ return addr ? (addr.slice(0,4)+'…'+addr.slice(-4)) : ''; }
 
-function getSavedWallet(){
-  try { return JSON.parse(localStorage.getItem(WALLET_KEY) || 'null'); } catch(e){ return null; }
-}
-function saveWallet(obj){
-  try { localStorage.setItem(WALLET_KEY, JSON.stringify(obj)); } catch(e){}
-}
-function clearWallet(){
-  try { localStorage.removeItem(WALLET_KEY); } catch(e){}
-}
+// ВАЖНО: для демо используем публичный манифест TON Connect.
+// Для продакшена: замените на ваш хост: https://your-domain/tonconnect-manifest.json
+const MANIFEST_URL = 'https://ton-connect.github.io/demo-dapp-with-wallet/tonconnect-manifest.json';
 
-/* render wallet UI on load */
-function renderWalletUI(){
-  const w = getSavedWallet();
-  if(w && w.address){
-    walletLabel.textContent = truncateAddr(w.address);
-    walletBtn.classList.remove('disconnected');
-    walletBtn.setAttribute('aria-label','TON кошелёк подключён. Нажмите, чтобы отключить.');
-    walletBtn.title = 'Нажмите, чтобы отключить кошелек';
-  } else {
-    walletLabel.textContent = 'Connect TON';
-    walletBtn.classList.add('disconnected');
-    walletBtn.setAttribute('aria-label','Подключить TON кошелёк');
-    walletBtn.title = 'Подключить TON кошелёк';
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+  manifestUrl: MANIFEST_URL,
+  // можно кастомизировать список кошельков, но оставим дефолт — как на фото
+  actionsConfiguration: {
+    // чтобы модалка быстрее появлялась в мини-аппе
+    twaReturnUrl: 'https://t.me' // не обязат., помогает Telegram Wallet
   }
-}
-
-/* simulate connecting to TON wallet (mock) */
-walletBtn.addEventListener('click', (e)=>{
-  const current = getSavedWallet();
-  if(current && current.address){
-    // toggle: disconnect
-    if(confirm('Отключить TON кошелёк?')) {
-      clearWallet();
-      renderWalletUI();
-    }
-    return;
-  }
-  // simulate connection with a mock address (in real app покажите окно кошелька)
-  // For a better UX we can prompt user to paste address — keep simple: use mock or prompt.
-  let addr = prompt('Вставьте адрес TON-кошелька или нажмите Отмена для автозаполнения тестовым адресом:');
-  if(!addr){
-    // mock example from your screenshot-ish (truncated shown)
-    addr = 'UQBoabcdefghijklmnoT0YX';
-  }
-  saveWallet({ address: addr, connectedAt: Date.now() });
-  renderWalletUI();
 });
 
-/* init wallet UI quickly */
-renderWalletUI();
+// Статус подключения
+function renderWalletState(){
+  const addr = tonConnectUI.account?.address;
+  if(addr){
+    walletBtn.classList.remove('disconnected');
+    walletLabel.textContent = truncateAddr(addr);
+    walletBtn.setAttribute('aria-label','Wallet connected: '+addr);
+  } else {
+    walletBtn.classList.add('disconnected');
+    walletLabel.textContent = 'Connect TON';
+    walletBtn.setAttribute('aria-label','Connect TON wallet');
+  }
+}
 
-/* ---------- Telegram WebApp: имя и аватар (инициализация) ---------- */
+// Клик по кнопке — открыть нативную модалку TON Connect
+walletBtn.addEventListener('click', async (e)=>{
+  // Если уже подключен — открыть мини-меню (Disconnect)
+  if(tonConnectUI.connected){
+    walletMenu.classList.toggle('open');
+    walletMenu.setAttribute('aria-hidden', walletMenu.classList.contains('open') ? 'false':'true');
+    // Закрыть по клику вне
+    document.addEventListener('click', function onDoc(ev){
+      if(!walletMenu.contains(ev.target) && ev.target !== walletBtn){
+        walletMenu.classList.remove('open');
+        walletMenu.setAttribute('aria-hidden','true');
+        document.removeEventListener('click', onDoc);
+      }
+    });
+    return;
+  }
+  try{
+    await tonConnectUI.openModal(); // покажет окно выбора кошельков "как на фото"
+  }catch(err){ console.warn('TON Connect openModal error', err); }
+});
+
+// Disconnect
+disconnectBtn.addEventListener('click', async ()=>{
+  try { await tonConnectUI.disconnect(); } catch(e){ console.warn(e); }
+  walletMenu.classList.remove('open'); walletMenu.setAttribute('aria-hidden','true');
+});
+
+// Реакция на изменение статуса
+tonConnectUI.onStatusChange((walletInfo)=>{
+  // walletInfo может быть null (disconnected) или объектом с account
+  renderWalletState();
+});
+
+// Первичная отрисовка
+renderWalletState();
+
+/* ----------- Telegram user (имя/аватар) ----------- */
 (function initTelegramUser(){
   try {
     if(window.Telegram && Telegram.WebApp){
@@ -664,23 +404,18 @@ renderWalletUI();
       const bigName = document.getElementById('bigName');
 
       if(user){
-        const parts = [];
-        if(user.first_name) parts.push(user.first_name);
-        if(user.last_name) parts.push(user.last_name);
-        if(parts.length === 0 && user.username) parts.push(user.username);
-        if(parts.length === 0) parts.push('User');
-
+        const parts = []; if(user.first_name) parts.push(user.first_name); if(user.last_name) parts.push(user.last_name);
+        if(parts.length===0 && user.username) parts.push(user.username);
+        if(parts.length===0) parts.push('User');
         const displayName = parts.join(' ');
-        nameEl.textContent = displayName;
-        bigName.textContent = displayName;
+        nameEl.textContent = displayName; bigName.textContent = displayName;
 
         if(user.photo_url){
           avatarEl.style.backgroundImage = `url("${user.photo_url}")`;
           bigAvatar.style.backgroundImage = `url("${user.photo_url}")`;
         } else {
           const initials = parts.map(p=>p[0]||'').join('').slice(0,2).toUpperCase() || 'U';
-          const bg = '#2b3345';
-          const fg = '#fff';
+          const bg = '#2b3345', fg = '#fff';
           const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='${bg}' rx='40'/><text x='50%' y='50%' font-family='Arial,sans-serif' font-size='90' fill='${fg}' dominant-baseline='middle' text-anchor='middle'>${initials}</text></svg>`;
           const url = `data:image/svg+xml;charset=utf8,${encodeURIComponent(svg)}`;
           avatarEl.style.backgroundImage = `url("${url}")`;
@@ -688,473 +423,201 @@ renderWalletUI();
         }
       }
     }
-  } catch(err){
-    console.warn('Telegram init error', err);
-  }
+  } catch(err){ console.warn('Telegram init error', err); }
 })();
 
-/* ---------- Lottie / rlottie загрузка (везде) ---------- */
+/* ----------- Lottie helpers ----------- */
 function loadLottieFor(el){
-  const url = el.getAttribute('data-lottie-url');
-  el.innerHTML = '';
-  if(!url){
-    el.innerHTML = '<div class="lottie-placeholder">Укажите raw ссылку на Lottie (.json или .tgs)</div>';
-    return;
-  }
-
-  // JSON -> lottie-web
+  const url = el.getAttribute('data-lottie-url'); el.innerHTML='';
+  if(!url){ el.innerHTML='<div class="lottie-placeholder">Укажите ссылку на Lottie (.json/.tgs)</div>'; return; }
   if(/\.json(\?|$)/i.test(url) && window.lottie){
-    try {
-      lottie.loadAnimation({
-        container: el,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: url
-      });
-      return;
-    } catch(e){
-      el.innerHTML = '<div class="lottie-placeholder">Ошибка загрузки Lottie JSON</div>';
-    }
+    try{ lottie.loadAnimation({container:el, renderer:'svg', loop:true, autoplay:true, path:url}); return; }catch(e){ el.innerHTML='<div class="lottie-placeholder">Ошибка Lottie JSON</div>'; }
   }
-
-  // .tgs -> rlottie
   if(/\.tgs(\?|$)/i.test(url) && window.rlottie){
-    try {
-      const player = new rlottie.Player({
-        name: 'anim-' + Math.random().toString(36).slice(2),
-        src: url,
-        loop: true,
-        autoplay: true,
-        container: el
-      });
-      el.style.display = 'grid'; el.style.placeItems = 'center';
-      return;
-    } catch(e){
-      el.innerHTML = '<div class="lottie-placeholder">Ошибка загрузки TGS</div>';
-    }
+    try{ new rlottie.Player({name:'anim-'+Math.random().toString(36).slice(2), src:url, loop:true, autoplay:true, container:el}); el.style.display='grid'; el.style.placeItems='center'; return; }catch(e){ el.innerHTML='<div class="lottie-placeholder">Ошибка TGS</div>'; }
   }
-
-  // fallback: image
-  if(/\.(svg|png|jpg|jpeg|gif)(\?|$)/i.test(url)){
-    const img = document.createElement('img');
-    img.src = url; img.alt = 'media';
-    img.style.maxWidth = '100%'; img.style.maxHeight = '100%';
-    el.appendChild(img); return;
-  }
-
-  el.innerHTML = '<div class="lottie-placeholder">Неподдерживаемый формат</div>';
+  if(/\.(svg|png|jpg|jpeg|gif)(\?|$)/i.test(url)){ const img=document.createElement('img'); img.src=url; img.alt='media'; img.style.maxWidth='100%'; img.style.maxHeight='100%'; el.appendChild(img); return; }
+  el.innerHTML='<div class="lottie-placeholder">Неподдерживаемый формат</div>';
 }
-
-/* Load lotties for initial grid */
 document.querySelectorAll('.media.lottie').forEach(loadLottieFor);
 
-/* ---------- Persisted purchased gifts (localStorage) ---------- */
-const PURCHASE_KEY = 'turbo_gifts_purchased_v1';
+/* ----------- Память покупок ----------- */
+const PURCHASE_KEY='turbo_gifts_purchased_v1';
+function readPurchased(){ try{return JSON.parse(localStorage.getItem(PURCHASE_KEY)||'[]');}catch(e){return[];} }
+function savePurchased(list){ try{ localStorage.setItem(PURCHASE_KEY, JSON.stringify(list)); }catch(e){} }
+function addPurchased(item){ const list=readPurchased(); if(!list.some(x=>x.id===item.id)){ list.unshift(item); savePurchased(list); renderPurchasedGrid(); } }
 
-function readPurchased(){
-  try{ return JSON.parse(localStorage.getItem(PURCHASE_KEY) || '[]'); }catch(e){ return []; }
-}
-function savePurchased(list){
-  try{ localStorage.setItem(PURCHASE_KEY, JSON.stringify(list)); }catch(e){ console.warn('savePurchased',e); }
-}
-function addPurchased(item){
-  const list = readPurchased();
-  const exists = list.some(x => x.id === item.id);
-  if(!exists){
-    list.unshift(item);
-    savePurchased(list);
-    renderPurchasedGrid();
-  }
-}
-
-/* ---------- render purchased gifts grid (tab 3) ---------- */
+/* ----------- Рендер инвентаря ----------- */
 function createPurchasedCardNode(item){
-  const a = document.createElement('article');
-  a.className = 'purchased-card';
-  a.setAttribute('data-purchased-id', item.id);
-  a.setAttribute('role','article');
-  a.setAttribute('aria-label', item.title || 'Купленный подарок');
-
-  const media = document.createElement('div');
-  media.className = 'media';
-  media.setAttribute('data-lottie-url', item.lottie || '');
-  const footer = document.createElement('div');
-  footer.className = 'footer';
-
-  const priceWrap = document.createElement('div');
-  priceWrap.className = 'price';
-  priceWrap.style.display = 'inline-flex';
-  priceWrap.style.alignItems = 'center';
-  priceWrap.style.gap = '8px';
-  priceWrap.style.color = '#fff';
-  priceWrap.innerHTML = `<img src="stars-DBKMczxe.png" alt="icon" class="price-icon" style="width:14px;height:14px"><span class="price-value">${item.price}</span>`;
-
-  footer.appendChild(priceWrap);
-  a.appendChild(media);
-  a.appendChild(footer);
-
-  // load Lottie preview in the purchased card media
-  const inner = document.createElement('div');
-  inner.style.width = '100%';
-  inner.style.height = '100%';
-  if(item.lottie) inner.setAttribute('data-lottie-url', item.lottie);
-  media.appendChild(inner);
-  loadLottieFor(inner);
-
-  // click opens modal (for purchased item)
-  a.addEventListener('click', (e)=>{
-    openItemModalFromPurchased(item, a);
-  });
-
+  const a=document.createElement('article'); a.className='purchased-card'; a.setAttribute('data-purchased-id',item.id);
+  const media=document.createElement('div'); media.className='media'; media.setAttribute('data-lottie-url', item.lottie||'');
+  const footer=document.createElement('div'); footer.className='footer';
+  const priceWrap=document.createElement('div'); priceWrap.className='price'; priceWrap.style.display='inline-flex'; priceWrap.style.alignItems='center'; priceWrap.style.gap='8px'; priceWrap.style.color='#fff'; priceWrap.innerHTML=`<img src="stars-DBKMczxe.png" alt="icon" class="price-icon" style="width:14px;height:14px"><span class="price-value">${item.price}</span>`;
+  footer.appendChild(priceWrap); a.appendChild(media); a.appendChild(footer);
+  const inner=document.createElement('div'); inner.style.width='100%'; inner.style.height='100%'; if(item.lottie) inner.setAttribute('data-lottie-url', item.lottie); media.appendChild(inner); loadLottieFor(inner);
+  a.addEventListener('click',()=>{ openItemModalFromPurchased(item,a); });
   return a;
 }
-
 function renderPurchasedGrid(){
-  const grid = document.getElementById('purchasedGrid');
-  grid.innerHTML = '';
-  const list = readPurchased();
-  if(!list.length){
-    grid.innerHTML = '<div style="color:var(--muted); padding:12px; grid-column:1/-1; text-align:center">Пока нет купленных подарков</div>';
-    return;
-  }
-  list.forEach(item=>{
-    const node = createPurchasedCardNode(item);
-    grid.appendChild(node);
-  });
+  const grid=document.getElementById('purchasedGrid'); grid.innerHTML=''; const list=readPurchased();
+  if(!list.length){ grid.innerHTML='<div style="color:var(--muted);padding:12px;grid-column:1/-1;text-align:center">Пока нет купленных подарков</div>'; return; }
+  list.forEach(item=> grid.appendChild(createPurchasedCardNode(item)));
 }
 
-/* ---------- GSAP: скрыть/показ распроданных ---------- */
-const hideSoldCheckbox = document.getElementById('hideSold');
-const soldSelector = '[data-sold="true"]';
+/* ----------- Скрыть/показать проданные ----------- */
+const hideSoldCheckbox=document.getElementById('hideSold'); const soldSelector='[data-sold="true"]';
 function soldCards(){ return Array.from(document.querySelectorAll(soldSelector)); }
-
-function hideSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden==='1')return; if(typeof gsap!=='undefined'){ gsap.to(c,{duration:0.36, ease:'power2.out', opacity:0, scale:0.98, y:-8, onComplete:()=>{ c.style.display='none'; c.dataset._hidden='1'; } }); } else { c.style.display='none'; c.dataset._hidden='1'; } }); }
-function showSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden!=='1')return; c.style.display=''; if(typeof gsap!=='undefined'){ gsap.set(c,{opacity:0, scale:0.98, y:-8}); gsap.to(c,{duration:0.4, ease:'power2.out', opacity:1, scale:1, y:0, onComplete:()=>{ c.dataset._hidden='0'; }}); } else { c.dataset._hidden='0'; } }); }
-
-hideSoldCheckbox.addEventListener('change', ()=>{ if(hideSoldCheckbox.checked) hideSoldAnimated(); else showSoldAnimated(); });
+function hideSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden==='1')return; if(typeof gsap!=='undefined'){ gsap.to(c,{duration:.36,ease:'power2.out',opacity:0,scale:.98,y:-8,onComplete:()=>{c.style.display='none'; c.dataset._hidden='1';}});} else { c.style.display='none'; c.dataset._hidden='1'; } }); }
+function showSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden!=='1')return; c.style.display=''; if(typeof gsap!=='undefined'){ gsap.set(c,{opacity:0,scale:.98,y:-8}); gsap.to(c,{duration:.4,ease:'power2.out',opacity:1,scale:1,y:0,onComplete:()=>{c.dataset._hidden='0';}});} else { c.dataset._hidden='0'; } }); }
+hideSoldCheckbox.addEventListener('change', ()=>{ hideSoldCheckbox.checked ? hideSoldAnimated() : showSoldAnimated(); });
 window.addEventListener('load', ()=>{ if(hideSoldCheckbox.checked) setTimeout(hideSoldAnimated,120); else soldCards().forEach(c=>{ c.dataset._hidden='0'; c.style.display=''; c.style.opacity=1; c.style.transform='none'; }); renderPurchasedGrid(); });
 
-/* ---------- MODAL LOGIC ---------- */
-const itemOverlay = document.getElementById('itemOverlay');
-const modalCloseBtn = document.getElementById('modalCloseBtn');
-const modalTitle = document.getElementById('modalTitle');
-const modalLottie = document.getElementById('modalLottie');
-const modalPriceValue = document.getElementById('modalPriceValue');
-const modalBuyStars = document.getElementById('modalBuyStars');
-const modalBuyGift = document.getElementById('modalBuyGift');
-const modalBuyPrice = document.getElementById('modalBuyPrice');
-const modalShort = document.getElementById('modalShort');
-const modalUpgradeWrap = document.getElementById('modalUpgradeWrap');
-const modalUpgrade = document.getElementById('modalUpgrade');
+/* ----------- Item modal ----------- */
+const itemOverlay=document.getElementById('itemOverlay');
+const modalCloseBtn=document.getElementById('modalCloseBtn');
+const modalTitle=document.getElementById('modalTitle');
+const modalLottie=document.getElementById('modalLottie');
+const modalPriceValue=document.getElementById('modalPriceValue');
+const modalBuyStars=document.getElementById('modalBuyStars');
+const modalBuyGift=document.getElementById('modalBuyGift');
+const modalBuyPrice=document.getElementById('modalBuyPrice');
+const modalShort=document.getElementById('modalShort');
+const modalUpgradeWrap=document.getElementById('modalUpgradeWrap');
+const modalUpgrade=document.getElementById('modalUpgrade');
 
-const purchaseOverlay = document.getElementById('purchaseOverlay');
-const purchasedMedia = document.getElementById('purchasedMedia');
-const purchaseCloseBtn = document.getElementById('purchaseCloseBtn');
+const purchaseOverlay=document.getElementById('purchaseOverlay');
+const purchasedMedia=document.getElementById('purchasedMedia');
+const purchaseCloseBtn=document.getElementById('purchaseCloseBtn');
 
-const successOverlay = document.getElementById('successOverlay');
-const successMedia = document.getElementById('successMedia');
-const successCloseBtn = document.getElementById('successCloseBtn');
+const successOverlay=document.getElementById('successOverlay');
+const successMedia=document.getElementById('successMedia');
+const successCloseBtn=document.getElementById('successCloseBtn');
 
-let activeCard = null;
-let lastLottieUrl = null;
-let activeItemMeta = null; // object for current opened item
+let activeCard=null, lastLottieUrl=null, activeItemMeta=null;
 
 function openItemModal(cardEl){
-  activeCard = cardEl;
-  activeItemMeta = {
-    id: cardEl.id || ('gift_' + Date.now()),
+  activeCard=cardEl;
+  activeItemMeta={
+    id: cardEl.id || ('gift_'+Date.now()),
     title: cardEl.getAttribute('aria-label') || 'Подарок',
-    price: cardEl.querySelector('.price .price-value')?.textContent?.trim() || cardEl.querySelector('.price-value')?.textContent?.trim() || '0',
+    price: cardEl.querySelector('.price .price-value')?.textContent?.trim() || '0',
     lottie: cardEl.querySelector('.media.lottie')?.getAttribute('data-lottie-url') || '',
     invoice: cardEl.getAttribute('data-invoice-url') || '#',
-    purchased: false
-  };
-
-  showModalForMeta(activeItemMeta);
-}
-
-function openItemModalFromPurchased(item, cardNode){
-  // build meta for purchased item
-  activeItemMeta = {
-    id: item.id,
-    title: item.title,
-    price: item.price,
-    lottie: item.lottie,
-    invoice: item.invoice || '#',
-    purchased: true
+    purchased:false
   };
   showModalForMeta(activeItemMeta);
 }
-
+function openItemModalFromPurchased(item){
+  activeItemMeta={ id:item.id, title:item.title, price:item.price, lottie:item.lottie, invoice:item.invoice||'#', purchased:true };
+  showModalForMeta(activeItemMeta);
+}
 function showModalForMeta(meta){
-  // fill modal fields
-  modalTitle.textContent = meta.title || 'Подарок';
-  modalPriceValue.textContent = meta.price || '0';
-  modalBuyPrice.textContent = meta.price || '0';
-  modalShort.textContent = '';
-  modalBuyGift.href = meta.invoice || '#';
-  modalBuyStars.href = document.getElementById('bannerBtn').href || '#';
+  modalTitle.textContent=meta.title||'Подарок';
+  modalPriceValue.textContent=meta.price||'0';
+  modalBuyPrice.textContent=meta.price||'0';
+  modalShort.textContent='';
+  modalBuyGift.href=meta.invoice||'#';
+  modalBuyStars.href=document.getElementById('bannerBtn').href||'#';
 
-  // determine purchased state: if purchased — hide buy button and hide upgrade completely
   if(meta.purchased){
-    modalBuyGift.classList.add('hidden');
-    // remove/hide upgrade UI entirely for purchased items (user requested убрать кнопку "Улучшить" при нажатии)
-    modalUpgradeWrap.style.display = 'none';
+    modalBuyGift.classList.add('hidden');      // нельзя купить повторно
+    modalUpgradeWrap.style.display='none';     // убрать «Улучшить» при просмотре купленного
   } else {
     modalBuyGift.classList.remove('hidden');
-    modalUpgradeWrap.style.display = ''; // show wrapper (if needed)
-    modalUpgradeWrap.classList.add('hidden'); // by default not visible for not purchased
+    modalUpgradeWrap.style.display='';
+    modalUpgradeWrap.classList.add('hidden');  // не показываем для неккупленных
   }
 
-  // load lottie into modalLottie
-  modalLottie.innerHTML = '';
+  modalLottie.innerHTML='';
   if(meta.lottie){
-    lastLottieUrl = meta.lottie;
-    const c = document.createElement('div');
-    c.style.width = '100%'; c.style.height = '100%';
-    c.setAttribute('data-lottie-url', meta.lottie);
-    modalLottie.appendChild(c);
-    loadLottieFor(c);
-  } else {
-    modalLottie.innerHTML = '<div class="lottie-placeholder">Нет анимации</div>';
-  }
+    lastLottieUrl=meta.lottie;
+    const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', meta.lottie);
+    modalLottie.appendChild(c); loadLottieFor(c);
+  } else { modalLottie.innerHTML='<div class="lottie-placeholder">Нет анимации</div>'; }
 
-  itemOverlay.classList.add('open'); itemOverlay.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
+  itemOverlay.classList.add('open'); itemOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
 }
-
 function closeItemModal(){
-  modalLottie.innerHTML = '';
-  // reset upgrade wrap visibility (so when next time opening non-purchased item it can appear)
-  modalUpgradeWrap.style.display = '';
-  modalUpgradeWrap.classList.add('hidden');
-  itemOverlay.classList.remove('open'); itemOverlay.setAttribute('aria-hidden','true');
-  document.body.style.overflow = '';
+  modalLottie.innerHTML=''; modalUpgradeWrap.style.display=''; modalUpgradeWrap.classList.add('hidden');
+  itemOverlay.classList.remove('open'); itemOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow='';
 }
-
-/* bind card clicks (for main grid) */
-document.querySelectorAll('.card').forEach(card=>{
-  card.addEventListener('click', (e)=>{
-    openItemModal(card);
-  });
-});
-
-/* close modal */
+document.querySelectorAll('.card').forEach(card=> card.addEventListener('click',()=>openItemModal(card)));
 modalCloseBtn.addEventListener('click', closeItemModal);
-itemOverlay.addEventListener('click', (e)=>{ if(e.target === itemOverlay) closeItemModal(); });
+itemOverlay.addEventListener('click', (e)=>{ if(e.target===itemOverlay) closeItemModal(); });
 
-/* ---------- Payment: openInvoice using selectedLink string approach ---------- */
+/* Покупка (как было ранее; можно заменить на ваш flow) */
 modalBuyGift.addEventListener('click', (e)=>{
   e.preventDefault();
-  const price = parseInt(modalPriceValue.textContent||0,10);
-  const selectedLink = (activeItemMeta && activeItemMeta.invoice) ? activeItemMeta.invoice : modalBuyGift.href || '#';
-
-  try {
-    if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.openInvoice === 'function'){
-      try {
-        Telegram.WebApp.openInvoice(selectedLink);
-      } catch (err) {
-        try {
+  const price=parseInt(modalPriceValue.textContent||0,10);
+  const selectedLink=(activeItemMeta&&activeItemMeta.invoice)?activeItemMeta.invoice:modalBuyGift.href||'#';
+  try{
+    if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.openInvoice==='function'){
+      try{ Telegram.WebApp.openInvoice(selectedLink); }
+      catch(err){
+        try{
           Telegram.WebApp.openInvoice({
-            title: modalTitle.textContent,
-            description: modalShort.textContent || 'Подарок',
-            payload: 'gift_' + Date.now(),
-            provider_token: 'YOUR_PROVIDER_TOKEN',
-            currency: 'USD',
-            prices: [{label:'Цена', amount: price*100}],
-          }, function(invoiceResult){
-            if(invoiceResult && invoiceResult.status === 'paid'){
-              window.handlePaymentSuccessAndSave && window.handlePaymentSuccessAndSave(invoiceResult);
-            }
-          });
-        } catch (err2) {
-          window.open(selectedLink, '_blank');
-        }
+            title: modalTitle.textContent, description: modalShort.textContent || 'Подарок',
+            payload:'gift_'+Date.now(), provider_token:'YOUR_PROVIDER_TOKEN', currency:'USD', prices:[{label:'Цена',amount:price*100}],
+          }, function(res){ if(res && res.status==='paid'){ window.handlePaymentSuccessAndSave && window.handlePaymentSuccessAndSave(res); }});
+        }catch(err2){ window.open(selectedLink,'_blank'); }
       }
-    } else {
-      window.open(selectedLink, '_blank');
-    }
-  } catch(e){
-    console.warn('openInvoice error', e);
-    window.open(selectedLink, '_blank');
-  }
+    } else { window.open(selectedLink,'_blank'); }
+  }catch(e){ console.warn('openInvoice error',e); window.open(selectedLink,'_blank'); }
 });
 
-/* ---------- Success modal behavior (new) ---------- */
+/* SUCCESS overlay */
 function showSuccessOverlay(meta){
-  if(!meta){
-    meta = activeItemMeta || {
-      id: 'gift_'+Date.now(),
-      title: modalTitle.textContent || 'Подарок',
-      price: modalPriceValue.textContent || '0',
-      lottie: lastLottieUrl || '',
-      invoice: modalBuyGift.href || '#'
-    };
-  } else {
-    activeItemMeta = meta;
-  }
-
-  successMedia.innerHTML = '';
-
-  if(meta.lottie){
-    const c = document.createElement('div');
-    c.style.width = '100%'; c.style.height = '100%';
-    c.setAttribute('data-lottie-url', meta.lottie);
-    successMedia.appendChild(c);
-    loadLottieFor(c);
-  } else {
-    successMedia.innerHTML = '<div class="lottie-placeholder">Нет медиа</div>';
-  }
-
-  successOverlay.classList.add('open');
-  successOverlay.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
+  if(!meta){ meta=activeItemMeta || { id:'gift_'+Date.now(), title:modalTitle.textContent||'Подарок', price:modalPriceValue.textContent||'0', lottie:lastLottieUrl||'', invoice:modalBuyGift.href||'#' }; }
+  else { activeItemMeta=meta; }
+  successMedia.innerHTML='';
+  if(meta.lottie){ const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', meta.lottie); successMedia.appendChild(c); loadLottieFor(c);}
+  else { successMedia.innerHTML='<div class="lottie-placeholder">Нет медиа</div>'; }
+  successOverlay.classList.add('open'); successOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
 }
-
-/* close success overlay: add to inventory then close */
 function closeSuccessOverlayAndSave(){
-  if(!activeItemMeta){
-    activeItemMeta = {
-      id: 'gift_' + Date.now(),
-      title: modalTitle.textContent || 'Подарок',
-      price: modalPriceValue.textContent || '0',
-      lottie: lastLottieUrl || '',
-      invoice: modalBuyGift.href || '#'
-    };
-  }
-
-  const saveItem = {
-    id: activeItemMeta.id || ('gift_'+Date.now()),
-    title: activeItemMeta.title || 'Подарок',
-    price: activeItemMeta.price || modalPriceValue.textContent || '0',
-    lottie: activeItemMeta.lottie || lastLottieUrl || '',
-    invoice: activeItemMeta.invoice || modalBuyGift.href || '#'
-  };
-  addPurchased(saveItem);
-
-  successMedia.innerHTML = '';
-  successOverlay.classList.remove('open');
-  successOverlay.setAttribute('aria-hidden','true');
-  document.body.style.overflow = '';
-
-  renderPurchasedGrid();
+  if(!activeItemMeta){ activeItemMeta={ id:'gift_'+Date.now(), title:modalTitle.textContent||'Подарок', price:modalPriceValue.textContent||'0', lottie:lastLottieUrl||'', invoice:modalBuyGift.href||'#' }; }
+  addPurchased({ id:activeItemMeta.id, title:activeItemMeta.title, price:activeItemMeta.price||modalPriceValue.textContent||'0', lottie:activeItemMeta.lottie||lastLottieUrl||'', invoice:activeItemMeta.invoice||modalBuyGift.href||'#' });
+  successMedia.innerHTML=''; successOverlay.classList.remove('open'); successOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; renderPurchasedGrid();
 }
+successCloseBtn.addEventListener('click', closeSuccessOverlayAndSave);
+successOverlay.addEventListener('click', (e)=>{ if(e.target===successOverlay) closeSuccessOverlayAndSave(); });
 
-successCloseBtn.addEventListener('click', ()=>{
-  closeSuccessOverlayAndSave();
-});
-successOverlay.addEventListener('click', (e)=>{ if(e.target === successOverlay) closeSuccessOverlayAndSave(); });
-
-/* ---------- Payment success handler (public) ---------- */
-window.handlePaymentSuccessAndSave = function(paymentData){
-  if(!activeItemMeta){
-    activeItemMeta = {
-      id: 'gift_'+Date.now(),
-      title: (paymentData && paymentData.title) ? paymentData.title : (modalTitle.textContent || 'Подарок'),
-      price: (paymentData && paymentData.price) ? paymentData.price : (modalPriceValue.textContent || '0'),
-      lottie: lastLottieUrl || '',
-      invoice: modalBuyGift.href || '#',
-      purchased: true
-    };
-  }
+window.handlePaymentSuccessAndSave=function(paymentData){
+  if(!activeItemMeta){ activeItemMeta={ id:'gift_'+Date.now(), title:(paymentData && paymentData.title)||modalTitle.textContent||'Подарок', price:(paymentData && paymentData.price)||modalPriceValue.textContent||'0', lottie:lastLottieUrl||'', invoice:modalBuyGift.href||'#', purchased:true }; }
   showSuccessOverlay(activeItemMeta);
 };
-
-window.handlePaymentSuccess = function(paymentData){
-  closeItemModal();
-
-  purchasedMedia.innerHTML = '';
-  let lottieUrl = (activeItemMeta && activeItemMeta.lottie) ? activeItemMeta.lottie : lastLottieUrl || null;
-  if(lottieUrl){
-    const c = document.createElement('div');
-    c.style.width = '100%'; c.style.height = '100%';
-    c.setAttribute('data-lottie-url', lottieUrl);
-    purchasedMedia.appendChild(c);
-    loadLottieFor(c);
-  } else {
-    purchasedMedia.innerHTML = '<div class="lottie-placeholder">Нет медиа</div>';
-  }
-
-  purchaseOverlay.classList.add('open'); purchaseOverlay.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-};
-
+window.handlePaymentSuccess=function(){ closeItemModal(); purchasedMedia.innerHTML=''; const l=activeItemMeta?.lottie || lastLottieUrl; if(l){ const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', l); purchasedMedia.appendChild(c); loadLottieFor(c);} else { purchasedMedia.innerHTML='<div class="lottie-placeholder">Нет медиа</div>'; } purchaseOverlay.classList.add('open'); purchaseOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; };
 function closePurchaseModal(){ purchasedMedia.innerHTML=''; purchaseOverlay.classList.remove('open'); purchaseOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
 purchaseCloseBtn.addEventListener('click', closePurchaseModal);
-purchaseOverlay.addEventListener('click',(e)=>{ if(e.target === purchaseOverlay) closePurchaseModal(); });
+purchaseOverlay.addEventListener('click',(e)=>{ if(e.target===purchaseOverlay) closePurchaseModal(); });
 
-/* ---------- Modal: Upgrade button behavior (disabled) ---------- */
-modalUpgrade.addEventListener('click', (e)=>{
-  // visually disabled - do nothing
-  e.preventDefault();
-  return false;
-});
-
-/* ---------- Tabbar clicks visual + Tab3 rendering ---------- */
+/* Tabbar */
 document.querySelectorAll('.tabs .tab').forEach(tab=>{
   tab.addEventListener('click', ()=>{
     document.querySelectorAll('.tabs .tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
     tab.classList.add('active'); tab.setAttribute('aria-selected','true');
-
-    const mainApp = document.getElementById('mainApp');
-    const tab3 = document.getElementById('tab3Content');
-    if(tab.id === 'tab3'){
-      mainApp.style.display = 'none';
-      tab3.classList.add('open');
-      tab3.setAttribute('aria-hidden','false');
-      renderPurchasedGrid();
-    } else {
-      mainApp.style.display = '';
-      tab3.classList.remove('open');
-      tab3.setAttribute('aria-hidden','true');
-    }
+    const mainApp=document.getElementById('mainApp'); const tab3=document.getElementById('tab3Content');
+    if(tab.id==='tab3'){ mainApp.style.display='none'; tab3.classList.add('open'); tab3.setAttribute('aria-hidden','false'); renderPurchasedGrid(); }
+    else { mainApp.style.display=''; tab3.classList.remove('open'); tab3.setAttribute('aria-hidden','true'); }
   });
 });
 
-/* ---------- Telegram invoiceClosed event handler (if supported) ---------- */
+/* Telegram invoiceClosed -> success */
 (function attachInvoiceClosed(){
-  try {
-    if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.onEvent === 'function'){
-      Telegram.WebApp.onEvent("invoiceClosed", function(event) {
-        try {
-          if(event && event.status === "paid"){
-            showSuccessOverlay(activeItemMeta);
-          } else {
-            console.log('Invoice closed with status', event && event.status);
-          }
-        } catch(err){
-          console.warn('invoiceClosed handler error', err);
-        }
-      });
-    } else {
-      if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.on === 'function'){
-        Telegram.WebApp.on('invoiceClosed', function(event){
-          if(event && event.status === "paid"){
-            showSuccessOverlay(activeItemMeta);
-          }
-        });
-      }
+  try{
+    if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.onEvent==='function'){
+      Telegram.WebApp.onEvent("invoiceClosed", (event)=>{ try{ if(event && event.status==="paid"){ showSuccessOverlay(activeItemMeta); } }catch(e){} });
+    } else if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.on==='function'){
+      Telegram.WebApp.on('invoiceClosed', (event)=>{ if(event && event.status==="paid"){ showSuccessOverlay(activeItemMeta); } });
     }
-  } catch(err){
-    console.warn('attachInvoiceClosed error', err);
-  }
+  }catch(err){ console.warn('attachInvoiceClosed error', err); }
 })();
 
-/* ---------- resize handler ---------- */
-let resizeTimer = null;
-window.addEventListener('resize', ()=>{
-  if(resizeTimer) clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(()=>{}, 120);
-});
+/* Init purchased grid on start */
+document.addEventListener('DOMContentLoaded', renderPurchasedGrid);
 
-/* ---------- init purchased grid on start ---------- */
-document.addEventListener('DOMContentLoaded', ()=>{
-  renderPurchasedGrid();
-});
-
-/* Safety note in console when GSAP missing */
-if(typeof gsap === 'undefined') console.warn('GSAP не загружен — анимации скрыть/показ упрощены.');
+/* GSAP warn */
+if(typeof gsap==='undefined') console.warn('GSAP не загружен — анимации упрощены.');
 </script>
 </body>
 </html>
