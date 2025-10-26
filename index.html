@@ -8,29 +8,29 @@
 <!-- Telegram Web Apps SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- lottie-web (.json) -->
+<!-- Lottie (.json) -->
 <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 <!-- rlottie (.tgs) -->
 <script src="https://cdn.jsdelivr.net/npm/rlottie@2.6.0/dist/rlottie.min.js"></script>
 <!-- GSAP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<!-- TON Connect UI (официальная модалка выбора кошельков) -->
+<!-- TON Connect UI -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
 <style>
 :root{
   --bg:#0f1116;
   --bg-soft:#151822;
+  --card-bg:#1a1e2a;
   --text:#ffffff;
   --muted:#c8cdd6;
-  --accent-blue-start:#3abefc;
-  --accent-blue-end:#6aa8ff;
+  --primary-start:#3abefc;
+  --primary-end:#6aa8ff;
   --radius:18px;
   --card-footer-h:56px;
   --tab-size:46px;
   --shadow: 0 10px 30px rgba(0,0,0,.35);
 }
-/* Reset */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -39,8 +39,6 @@ body{
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   line-height:1.35;
 }
-
-/* App */
 .app{ max-width:560px; margin:0 auto; min-height:100vh; padding-bottom:calc(var(--tab-size) + 28px); }
 
 /* Topbar */
@@ -54,19 +52,19 @@ body{
 .avatar{ width:40px; height:40px; border-radius:50%; background:#222 center/cover; border:2px solid #303544; flex-shrink:0; }
 .name{ font-weight:700; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* Wallet (top-right) */
-.wallet-wrap{ display:flex; align-items:center; gap:8px; }
+/* Wallet area (右上) */
+.wallet-area{ display:flex; align-items:center; gap:8px; position:relative; }
+
+/* Pre-connect button */
 .wallet-btn{
   display:inline-flex; align-items:center; gap:8px; border:0; cursor:pointer;
   padding:10px 14px; border-radius:14px;
-  background:linear-gradient(90deg,var(--accent-blue-start),var(--accent-blue-end));
-  color:#fff; font-weight:900; box-shadow:0 8px 22px rgba(32,120,255,.25);
+  background:linear-gradient(90deg,#2b3345,#3b4257);
+  color:#cbd6ee; font-weight:900;
 }
-.wallet-btn.disconnected{ background:linear-gradient(90deg,#2b3345,#3b4257); color:#cbd6ee; box-shadow:none; }
-.wallet-btn .addr{ max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wallet-caret{ width:14px; height:14px; opacity:.9; }
 .wallet-menu{
-  position:absolute; right:12px; top:56px; z-index:50; display:none;
+  position:absolute; right:0; top:50px; z-index:50; display:none;
   background:#121622; border:1px solid #252b3d; border-radius:12px; padding:6px; min-width:160px;
   box-shadow:0 10px 30px rgba(0,0,0,.4);
 }
@@ -76,8 +74,22 @@ body{
 }
 .wallet-menu button:hover{ background:#1a2030; }
 
+/* After connect: balance pill */
+.balance-pill{
+  display:none; align-items:center; gap:10px;
+  background:linear-gradient(90deg,var(--primary-start),var(--primary-end));
+  padding:10px 12px; border-radius:14px; font-weight:900; color:#fff; box-shadow:0 10px 28px rgba(60,140,255,.25);
+}
+.balance-pill .ton-ico{ width:20px; height:20px; }
+.balance-pill .amount{ font-size:16px; }
+.balance-pill .plus{
+  margin-left:6px; width:28px; height:28px; border-radius:10px; display:grid; place-items:center; cursor:pointer;
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.25);
+}
+
 /* Banner */
-.banner{ margin:12px 14px; padding:13px 12px; border-radius:14px; background:linear-gradient(90deg,#3abefc,#6aa8ff); display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
+.banner{ margin:12px 14px; padding:13px 12px; border-radius:14px; background:linear-gradient(90deg,var(--primary-start),var(--primary-end)); display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
 .banner .title{ font-weight:800; font-size:15px; margin:0 8px; }
 .banner .btn{ background:#fff; color:#09b5ff; font-weight:700; padding:6px 10px; border-radius:12px; text-decoration:none; font-size:13px; display:inline-flex; align-items:center; gap:8px; }
 
@@ -88,10 +100,8 @@ body{
 .toggle input:checked::after{ content:"✓"; color:#a8c9ff; font-size:14px; line-height:1; }
 .toggle label{ color:var(--text); font-weight:600; user-select:none; }
 
-/* Grid */
+/* Grid (market) */
 .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; justify-items:center; align-items:start; }
-
-/* Market card */
 .card{
   position:relative; overflow:hidden; border-radius:16px;
   background: radial-gradient(120% 120% at 0% 0%, #20263a 0%, #1a1f2d 40%, #161b28 100%);
@@ -101,7 +111,7 @@ body{
 @media (max-width:420px){ .card{ height:200px; } }
 .card:active{ transform:translateY(1px); }
 .card .media{ position:absolute; left:0; right:0; top:0; height:calc(100% - var(--card-footer-h)); display:flex; align-items:center; justify-content:center; padding:14px; }
-.media canvas, .media svg, .media img, .media div{ max-width:100%; max-height:100%; }
+.media canvas,.media svg,.media img,.media div{ max-width:100%; max-height:100%; }
 .card .footer{ height:var(--card-footer-h); display:flex; align-items:center; justify-content:center; padding:10px 14px; background:linear-gradient(180deg, rgba(11,13,18,.35), rgba(11,13,18,.55)); border-top:1px solid rgba(255,255,255,.03); backdrop-filter:blur(4px); }
 .card .footer .price{ display:inline-flex; align-items:center; gap:8px; background:linear-gradient(180deg, rgba(255,210,75,.14), rgba(255,195,45,.14)); padding:6px 13px; border-radius:16px; color:#51ff00d2; font-weight:700; font-size:15px; box-shadow:0 6px 16px rgba(0,0,0,.22); }
 .price-icon{ width:16px; height:16px; object-fit:contain; border-radius:3px; }
@@ -118,13 +128,54 @@ body{
 .tab img{ width:20px; height:20px; object-fit:contain; display:block; }
 .tab.active{ outline:2px solid #3f69ff55; transform:translateY(-2px); }
 
-/* Overlays & Modals */
-.overlay,.purchase-overlay{ position:fixed; inset:0; z-index:2000; display:none; align-items:center; justify-content:center; background:rgba(6,8,10,.95); backdrop-filter:blur(6px); }
-.overlay.open,.purchase-overlay.open{ display:flex; }
+/* Overlays */
+.overlay{ position:fixed; inset:0; z-index:2000; display:none; align-items:center; justify-content:center; background:rgba(6,8,10,.96); backdrop-filter:blur(6px); }
+.overlay.open{ display:flex; }
+
+/* Wallet modal */
+.wallet-modal{
+  width:100%; max-width:560px; border-radius:16px; padding:16px;
+  background:linear-gradient(180deg,#10131b,#0c0f16); border:1px solid #202638; box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.wm-header{ display:flex; align-items:center; justify-content:space-between; }
+.wm-title{ font-weight:900; font-size:18px; }
+.wm-close{ background:transparent; border:0; color:#b7c1d6; font-weight:800; font-size:18px; cursor:pointer; }
+.wm-balance{
+  margin-top:12px; display:flex; align-items:center; gap:10px;
+  background:linear-gradient(90deg,#1a2131,#121826); padding:12px; border-radius:12px; border:1px solid #20283b;
+}
+.wm-row{ margin-top:12px; display:flex; gap:8px; }
+.wm-tabs{ display:flex; gap:8px; }
+.wm-tab{ padding:10px 12px; border-radius:10px; background:#141a28; border:1px solid #223046; color:#cfe0ff; font-weight:800; cursor:pointer; }
+.wm-tab.active{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; border-color:transparent; }
+.wm-body{ margin-top:12px; background:#0f141f; border:1px solid #20283b; border-radius:12px; padding:12px; }
+
+/* Deposit view */
+.copy-line{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.addr-badge{ background:#141a26; border:1px solid #24324a; padding:8px 10px; border-radius:10px; font-weight:700; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 12px; border-radius:10px; border:1px solid #223046; background:#141a28; color:#dbe7ff; font-weight:800; cursor:pointer; text-decoration:none; }
+.btn.primary{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; border-color:transparent; }
+.qr{ margin-top:10px; display:grid; place-items:center; }
+.qr canvas{ background:#fff; border-radius:10px; padding:6px; }
+
+/* Withdraw view */
+.form-row{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.input{ width:100%; padding:12px; border-radius:10px; border:1px solid #293349; background:#0f131c; color:#fff; font-weight:700; }
+.hint{ color:#8ea3c2; font-size:12px; }
+
+/* History */
+.tx-list{ display:flex; flex-direction:column; gap:8px; }
+.tx-item{ display:flex; align-items:center; justify-content:space-between; background:#0f141f; border:1px solid #20283b; border-radius:10px; padding:10px; }
+.tx-item .left{ display:flex; flex-direction:column; gap:2px; }
+.tx-item .right{ font-weight:900; }
+.badge-in { color:#4dff9a; }
+.badge-out{ color:#ff7b7b; }
+
+/* Item modal / purchase / success (сокращено, как раньше) */
 .modal-card{ width:100%; height:100%; max-height:100vh; background:linear-gradient(180deg,#0f1116,#0b0d10); border-radius:0; display:flex; flex-direction:column; overflow:hidden; padding-bottom:16px; }
 .modal-top{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.03); }
 .modal-title{ font-weight:800; font-size:20px; }
-.modal-close{ background:transparent; border:0; color:var(--muted); font-weight:700; cursor:pointer; font-size:16px; }
+.modal-close{ background:transparent; border:0; color:#b7c1d6; font-weight:700; cursor:pointer; font-size:16px; }
 .modal-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:8px; overflow:auto; }
 .modal-media-wrap{ width:95%; max-width:520px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:14px; background:linear-gradient(180deg, rgba(20,22,28,.45), rgba(8,9,12,.35)); border:1px solid rgba(255,255,255,.03); box-shadow:0 20px 60px rgba(0,0,0,.6); overflow:hidden; }
 .modal-media{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:8px; }
@@ -135,20 +186,7 @@ body{
 .btn-ghost{ background:rgba(255,255,255,.06); color:#fff; padding:14px; border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,.03); font-weight:800; text-decoration:none; }
 .btn-primary{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; text-align:center; font-weight:900; text-decoration:none; }
 
-/* Purchase + Success */
-.purchase-card{ width:100%; height:100%; max-height:100vh; background:linear-gradient(180deg,#0b0d11,#0e1114); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; }
-.purchase-media{ width:95%; height:65%; display:flex; align-items:center; justify-content:center; }
-.purchase-close{ margin-top:auto; width:95%; max-width:720px; text-align:center; background:#2fa6ff; color:#fff; padding:16px; border-radius:12px; font-weight:900; cursor:pointer; }
-.success-overlay{ position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; background:rgba(8,10,12,.96); backdrop-filter:blur(6px); }
-.success-overlay.open{ display:flex; }
-.success-card{ width:100%; max-width:720px; height:100%; max-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:24px; }
-.success-inner{ margin-top:36px; width:min(520px,95%); background:linear-gradient(180deg, rgba(20,22,28,.55), rgba(10,11,13,.35)); border-radius:16px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); }
-.success-media{ width:70%; max-width:420px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:12px; background:linear-gradient(180deg, rgba(5,7,9,.2), rgba(8,9,10,.12)); border:1px solid rgba(255,255,255,.03); overflow:hidden; }
-.success-title{ font-size:22px; font-weight:900; margin-top:6px; text-align:center; }
-.success-sub{ color:var(--muted); font-size:13px; text-align:center; margin-bottom:6px; }
-.success-close-full{ position:absolute; bottom:18px; left:50%; transform:translateX(-50%); width:calc(100% - 36px); max-width:720px; background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; font-weight:900; text-align:center; cursor:pointer; box-shadow:0 12px 30px rgba(20,80,160,.18); }
-
-/* Tab 3 (profile + purchased) */
+/* Tab 3 (inventory) */
 .tab3-wrapper{ padding:16px; display:none; flex-direction:column; align-items:center; gap:12px; }
 .tab3-wrapper.open{ display:flex; }
 .tab3-profile{ display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:6px; }
@@ -156,7 +194,6 @@ body{
 .tab3-profile .profile-name{ font-weight:800; font-size:18px; }
 .separator{ width:90%; height:1px; background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); margin:4px 0 8px; border-radius:2px; }
 
-/* Purchased cards — как в маркете, но меньше */
 .purchased-grid{ width:100%; display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:0 10px 30px; box-sizing:border-box; }
 .purchased-card{
   position:relative; overflow:hidden; border-radius:14px;
@@ -167,13 +204,8 @@ body{
 .purchased-card .media{ position:absolute; left:0; right:0; top:0; height:calc(100% - 44px); display:flex; align-items:center; justify-content:center; padding:10px; }
 .purchased-card .footer{ height:44px; display:flex; align-items:center; justify-content:center; width:100%; background:transparent; border-top:1px solid rgba(255,255,255,.02); }
 
-.hidden{ display:none !important; }
+.hidden{ display:none!important; }
 .lottie-placeholder{ color:var(--muted); font-size:13px; text-align:center; padding:8px }
-
-@media (max-width:420px){
-  .purchased-card{ height:180px; max-width:48%; }
-  .success-media{ width:88%; }
-}
 </style>
 </head>
 <body>
@@ -185,16 +217,27 @@ body{
         <div id="userName" class="name">User</div>
       </div>
 
-      <!-- Wallet connect (top-right like on photo) -->
-      <div class="wallet-wrap">
-        <button id="walletBtn" class="wallet-btn disconnected" aria-label="Connect TON wallet">
-          <span id="walletLabel" class="addr">Connect TON</span>
+      <!-- RIGHT: wallet area -->
+      <div class="wallet-area">
+        <!-- до подключения -->
+        <button id="walletBtn" class="wallet-btn" aria-label="Connect TON wallet">
+          <span id="walletBtnText">Connect TON</span>
           <svg class="wallet-caret" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
         <div id="walletMenu" class="wallet-menu" role="menu" aria-hidden="true">
           <button id="disconnectBtn">Disconnect</button>
+        </div>
+
+        <!-- после подключения -->
+        <div id="balancePill" class="balance-pill" aria-live="polite">
+          <!-- TON icon -->
+          <svg class="ton-ico" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <path d="M20 2C10.058 2 2 10.058 2 20s8.058 18 18 18 18-8.058 18-18S29.942 2 20 2Zm0 5.2 9.6 15.7h-6.7L20 14.7l-2.9 8.2h-6.7L20 7.2Z" fill="white" opacity=".9"/>
+          </svg>
+          <span class="amount"><span id="tonAmount">0</span> TON</span>
+          <div id="openWalletModal" class="plus" title="Пополнить / вывести / история">+</div>
         </div>
       </div>
     </div>
@@ -213,7 +256,8 @@ body{
 
     <!-- Grid (market) -->
     <div class="grid" id="cardsGrid" aria-live="polite">
-      <article class="card" id="card1" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Cute sticker — 1 из 100">
+      <article class="card" id="card1" data-sold="false" role="article" aria-label="Cute sticker — 1 из 100"
+               data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4">
         <div class="ribbon stock" aria-hidden="true">1 из 100</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/sticker.json">
           <div class="lottie-placeholder">Lottie animation 1</div>
@@ -223,7 +267,8 @@ body{
         </div>
       </article>
 
-      <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Dog sticker — 1 из 50">
+      <article class="card" id="card2" data-sold="false" role="article" aria-label="Dog sticker — 1 из 50"
+               data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4">
         <div class="ribbon stock" aria-hidden="true">1 из 50</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/002_DOG%20(1).json">
           <div class="lottie-placeholder">Lottie animation 2</div>
@@ -260,7 +305,7 @@ body{
     <div id="purchasedGrid" class="purchased-grid" aria-live="polite"></div>
   </div>
 
-  <!-- ITEM MODAL -->
+  <!-- ITEM MODAL (shop) -->
   <div id="itemOverlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card" role="document" aria-label="Детали подарка">
       <div class="modal-top">
@@ -284,114 +329,323 @@ body{
         <div class="modal-actions">
           <a id="modalBuyStars" class="btn-ghost" href="#" target="_blank" rel="noopener noreferrer">Купить звёзды ★</a>
           <a id="modalBuyGift" class="btn-primary" href="#" target="_blank" rel="noopener noreferrer">Купить подарок — ★ <span id="modalBuyPrice">15</span></a>
-          <!-- «Улучшить» будет скрываться для купленных -->
-          <div id="modalUpgradeWrap" class="">
-            <a id="modalUpgrade" class="btn-upgrade disabled">Улучшить</a>
-          </div>
+          <div id="modalUpgradeWrap" class="hidden"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- PURCHASE (legacy) -->
-  <div id="purchaseOverlay" class="purchase-overlay" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="purchase-card" role="document" aria-label="Куплено">
-      <div id="purchasedMedia" class="purchase-media"></div>
-      <div id="purchaseCloseBtn" class="purchase-close" role="button" tabindex="0">Закрыть</div>
-    </div>
-  </div>
-
-  <!-- SUCCESS -->
-  <div id="successOverlay" class="success-overlay" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="success-card" role="document" aria-label="Подарок куплен">
-      <div class="success-inner">
-        <div id="successMedia" class="success-media" aria-hidden="true"></div>
-        <div class="success-title">Подарок куплен!</div>
-        <div class="success-sub">Ваш подарок находится в профиле</div>
+  <!-- WALLET MODAL (balance / deposit / withdraw / history) -->
+  <div id="walletOverlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="wallet-modal" role="document" aria-label="Кошелёк TON">
+      <div class="wm-header">
+        <div class="wm-title">Кошелёк TON</div>
+        <button id="wmClose" class="wm-close" aria-label="Закрыть">✕</button>
       </div>
-      <div id="successCloseBtn" class="success-close-full" role="button" tabindex="0">Закрыть</div>
+
+      <div class="wm-balance">
+        <strong>Баланс:</strong> <span id="wmAmount">0</span> TON
+      </div>
+
+      <div class="wm-row">
+        <div class="wm-tabs">
+          <button class="wm-tab active" data-tab="deposit">Пополнить</button>
+          <button class="wm-tab" data-tab="withdraw">Вывести</button>
+          <button class="wm-tab" data-tab="history">История</button>
+        </div>
+      </div>
+
+      <div id="wmBody" class="wm-body">
+        <!-- вкладки наполняются скриптом -->
+      </div>
     </div>
   </div>
 
 <script>
-/* ===========================
-   1) TON Connect UI — реальное подключение кошелька
-   2) Инвентарь: карточки меньше, "Улучшить" скрывается при просмотре купленного
-   3) Остальной функционал как раньше
-=========================== */
-
-/* ----------- TON Connect: инициализация ----------- */
-const walletBtn   = document.getElementById('walletBtn');
-const walletLabel = document.getElementById('walletLabel');
-const walletMenu  = document.getElementById('walletMenu');
-const disconnectBtn = document.getElementById('disconnectBtn');
-
-function truncateAddr(addr){ return addr ? (addr.slice(0,4)+'…'+addr.slice(-4)) : ''; }
-
-// ВАЖНО: для демо используем публичный манифест TON Connect.
-// Для продакшена: замените на ваш хост: https://your-domain/tonconnect-manifest.json
+/* ============================
+   CONFIG: вставь свой TonCenter API key
+============================ */
+const TONCENTER_API_KEY = 'PASTE_YOUR_MAINNET_TONCENTER_API_KEY_HERE'; // <--- ВСТАВЬ СЮДА ключ Mainnet
+const TONCENTER_URL = 'https://toncenter.com/api/v2'; // Mainnet
+// Манифест TON Connect (замени на свой)
 const MANIFEST_URL = 'https://vocococo.github.io/ton-connect/tonconnect-manifest.json';
+
+/* ============================
+   TON Connect UI
+============================ */
+const walletBtn     = document.getElementById('walletBtn');
+const walletBtnText = document.getElementById('walletBtnText');
+const walletMenu    = document.getElementById('walletMenu');
+const disconnectBtn = document.getElementById('disconnectBtn');
+const balancePill   = document.getElementById('balancePill');
+const tonAmountEl   = document.getElementById('tonAmount');
+const openWalletModalBtn = document.getElementById('openWalletModal');
 
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: MANIFEST_URL,
-  // можно кастомизировать список кошельков, но оставим дефолт — как на фото
-  actionsConfiguration: {
-    // чтобы модалка быстрее появлялась в мини-аппе
-    twaReturnUrl: 'https://t.me' // не обязат., помогает Telegram Wallet
-  }
+  actionsConfiguration: { twaReturnUrl: 'https://t.me' }
 });
 
-// Статус подключения
-function renderWalletState(){
-  const addr = tonConnectUI.account?.address;
-  if(addr){
-    walletBtn.classList.remove('disconnected');
-    walletLabel.textContent = truncateAddr(addr);
-    walletBtn.setAttribute('aria-label','Wallet connected: '+addr);
-  } else {
-    walletBtn.classList.add('disconnected');
-    walletLabel.textContent = 'Connect TON';
-    walletBtn.setAttribute('aria-label','Connect TON wallet');
-  }
+let REFRESH_TIMER = null;
+
+function nt2ton(nt){ // nanotons -> TON
+  return (Number(nt) / 1e9);
+}
+function ton2nt(ton){ // TON -> nanotons (string)
+  return Math.round(Number(ton) * 1e9).toString();
+}
+function shortAddr(addr){ return addr ? (addr.slice(0,4)+'…'+addr.slice(-4)) : ''; }
+
+function setConnectedUI(address){
+  walletBtn.style.display = 'none';
+  balancePill.style.display = 'inline-flex';
+  walletMenu.classList.remove('open');
+  walletMenu.setAttribute('aria-hidden','true');
+  // сразу баланс
+  updateBalance(address);
+  startAutoRefresh(address);
+}
+function setDisconnectedUI(){
+  stopAutoRefresh();
+  walletBtn.style.display = 'inline-flex';
+  balancePill.style.display = 'none';
+  walletBtnText.textContent = 'Connect TON';
 }
 
-// Клик по кнопке — открыть нативную модалку TON Connect
-walletBtn.addEventListener('click', async (e)=>{
-  // Если уже подключен — открыть мини-меню (Disconnect)
+/* open TON Connect modal / or menu if connected */
+walletBtn.addEventListener('click', async ()=>{
   if(tonConnectUI.connected){
     walletMenu.classList.toggle('open');
-    walletMenu.setAttribute('aria-hidden', walletMenu.classList.contains('open') ? 'false':'true');
-    // Закрыть по клику вне
-    document.addEventListener('click', function onDoc(ev){
-      if(!walletMenu.contains(ev.target) && ev.target !== walletBtn){
-        walletMenu.classList.remove('open');
-        walletMenu.setAttribute('aria-hidden','true');
+    walletMenu.setAttribute('aria-hidden', walletMenu.classList.contains('open') ? 'false' : 'true');
+    document.addEventListener('click', function onDoc(e){
+      if(!walletMenu.contains(e.target) && e.target !== walletBtn){
+        walletMenu.classList.remove('open'); walletMenu.setAttribute('aria-hidden','true');
         document.removeEventListener('click', onDoc);
       }
     });
     return;
   }
-  try{
-    await tonConnectUI.openModal(); // покажет окно выбора кошельков "как на фото"
-  }catch(err){ console.warn('TON Connect openModal error', err); }
+  try{ await tonConnectUI.openModal(); }catch(e){ console.warn(e); }
 });
-
-// Disconnect
 disconnectBtn.addEventListener('click', async ()=>{
-  try { await tonConnectUI.disconnect(); } catch(e){ console.warn(e); }
-  walletMenu.classList.remove('open'); walletMenu.setAttribute('aria-hidden','true');
+  try{ await tonConnectUI.disconnect(); }catch(e){}
+  setDisconnectedUI();
+});
+tonConnectUI.onStatusChange((info)=>{
+  const addr = tonConnectUI.account?.address;
+  if(addr){ setConnectedUI(addr); }
+  else { setDisconnectedUI(); }
 });
 
-// Реакция на изменение статуса
-tonConnectUI.onStatusChange((walletInfo)=>{
-  // walletInfo может быть null (disconnected) или объектом с account
-  renderWalletState();
+// при загрузке
+if(tonConnectUI.connected && tonConnectUI.account?.address){
+  setConnectedUI(tonConnectUI.account.address);
+}
+
+/* ============================
+   TonCenter API helpers
+============================ */
+// get balance
+async function fetchBalance(address){
+  const url = `${TONCENTER_URL}/getAddressBalance?address=${encodeURIComponent(address)}&api_key=${encodeURIComponent(TONCENTER_API_KEY)}`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('TonCenter balance error');
+  const j = await r.json();
+  if(!j.ok) throw new Error('TonCenter balance not ok');
+  return nt2ton(j.result);
+}
+async function fetchHistory(address, limit=15){
+  const url = `${TONCENTER_URL}/getTransactions?address=${encodeURIComponent(address)}&limit=${limit}&api_key=${encodeURIComponent(TONCENTER_API_KEY)}`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('TonCenter history error');
+  const j = await r.json();
+  if(!j.ok) throw new Error('TonCenter history not ok');
+  return j.result || [];
+}
+
+async function updateBalance(address){
+  try{
+    const bal = await fetchBalance(address);
+    tonAmountEl.textContent = bal.toFixed(4).replace(/\.?0+$/,'');
+    document.getElementById('wmAmount').textContent = tonAmountEl.textContent;
+  }catch(e){
+    console.warn('Balance error', e);
+  }
+}
+function startAutoRefresh(address){
+  stopAutoRefresh();
+  REFRESH_TIMER = setInterval(()=> updateBalance(address), 20000);
+}
+function stopAutoRefresh(){
+  if(REFRESH_TIMER){ clearInterval(REFRESH_TIMER); REFRESH_TIMER = null; }
+}
+
+/* ============================
+   Wallet Modal (Deposit / Withdraw / History)
+============================ */
+const walletOverlay = document.getElementById('walletOverlay');
+const wmClose = document.getElementById('wmClose');
+const wmBody = document.getElementById('wmBody');
+
+openWalletModalBtn.addEventListener('click', ()=>{
+  walletOverlay.classList.add('open'); walletOverlay.setAttribute('aria-hidden','false');
+  renderWalletTab('deposit');
+});
+wmClose.addEventListener('click', closeWalletModal);
+walletOverlay.addEventListener('click', (e)=>{ if(e.target===walletOverlay) closeWalletModal(); });
+
+function closeWalletModal(){
+  walletOverlay.classList.remove('open'); walletOverlay.setAttribute('aria-hidden','true');
+}
+document.querySelectorAll('.wm-tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.wm-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderWalletTab(btn.dataset.tab);
+  });
 });
 
-// Первичная отрисовка
-renderWalletState();
+function renderWalletTab(tab){
+  const addr = tonConnectUI.account?.address || '';
+  if(tab==='deposit'){
+    wmBody.innerHTML = `
+      <div class="copy-line">
+        <div class="addr-badge" id="depAddr">${addr || '—'}</div>
+        <button class="btn" id="copyAddrBtn">Скопировать адрес</button>
+        <a class="btn" id="openWalletLink" href="ton://transfer/${addr}" target="_blank" rel="noopener">Открыть кошелёк</a>
+        <a class="btn" href="https://tonkeeper.com/buy" target="_blank" rel="noopener">Купить TON</a>
+      </div>
+      <div class="qr"><canvas id="qrCanvas" width="180" height="180"></canvas></div>
+      <div class="hint">Отправь TON на этот адрес — после подтверждения сети баланс обновится автоматически.</div>
+    `;
+    attachDepositHandlers(addr);
+    drawQR(`ton://transfer/${addr}`);
+  }
+  if(tab==='withdraw'){
+    wmBody.innerHTML = `
+      <div class="form-row">
+        <label>Адрес получателя</label>
+        <input id="wTo" class="input" placeholder="например, EQC... или UQ..." />
+      </div>
+      <div class="form-row">
+        <label>Сумма (TON)</label>
+        <input id="wAmount" class="input" placeholder="0.1" inputmode="decimal" />
+      </div>
+      <div class="form-row">
+        <label>Комментарий (необязательно)</label>
+        <input id="wComment" class="input" placeholder="thanks!" />
+      </div>
+      <div class="form-row">
+        <button id="wSend" class="btn primary">Отправить</button>
+        <div class="hint" id="wHint"></div>
+      </div>
+    `;
+    attachWithdrawHandlers();
+  }
+  if(tab==='history'){
+    wmBody.innerHTML = `
+      <div class="hint">Последние транзакции кошелька:</div>
+      <div id="txList" class="tx-list"></div>
+    `;
+    renderHistory(addr);
+  }
+}
 
-/* ----------- Telegram user (имя/аватар) ----------- */
+function attachDepositHandlers(addr){
+  const copyBtn = document.getElementById('copyAddrBtn');
+  copyBtn?.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(addr||'');
+      copyBtn.textContent = 'Скопировано ✓';
+      setTimeout(()=> copyBtn.textContent='Скопировать адрес', 1500);
+    }catch(e){}
+  });
+  // open wallet link already set
+}
+
+// Мега-лёгкий QR (без библиотек — квадратики)
+function drawQR(text){
+  // Для простоты: используем бесплатный API charts (минимум зависимостей)
+  // Если оффлайн, можно подключить tiny QR-библиотеку. Здесь сделаем через Image.
+  const url = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(text)}`;
+  const c = document.getElementById('qrCanvas'); if(!c) return;
+  const ctx = c.getContext('2d');
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = ()=>{ ctx.clearRect(0,0,c.width,c.height); ctx.drawImage(img,0,0,180,180); };
+  img.src = url;
+}
+
+function attachWithdrawHandlers(){
+  const wSend = document.getElementById('wSend');
+  const wTo = document.getElementById('wTo');
+  const wAmount = document.getElementById('wAmount');
+  const wComment = document.getElementById('wComment');
+  const wHint = document.getElementById('wHint');
+
+  wSend.addEventListener('click', async ()=>{
+    const to = (wTo.value||'').trim();
+    const amount = (wAmount.value||'').trim();
+    if(!to || !amount){ wHint.textContent = 'Укажи адрес и сумму.'; return; }
+    try{
+      wHint.textContent = 'Ожидаем подтверждение в кошельке...';
+      await tonConnectUI.sendTransaction({
+        validUntil: Math.floor(Date.now()/1000) + 300,
+        messages: [{
+          address: to,
+          amount: ton2nt(amount),
+          payload: wComment.value ? btoa(unescape(encodeURIComponent(wComment.value))) : undefined
+        }]
+      });
+      wHint.textContent = 'Отправлено! Обновляем баланс...';
+      const addr = tonConnectUI.account?.address;
+      if(addr){ await updateBalance(addr); }
+      setTimeout(()=> { wHint.textContent = 'Готово ✅'; }, 800);
+    }catch(e){
+      console.warn('send tx error', e);
+      wHint.textContent = 'Операция отменена или ошибка.';
+    }
+  });
+}
+
+async function renderHistory(addr){
+  const list = document.getElementById('txList');
+  list.innerHTML = '<div class="hint">Загрузка...</div>';
+  try{
+    const txs = await fetchHistory(addr, 20);
+    if(!txs.length){ list.innerHTML = '<div class="hint">Нет транзакций</div>'; return; }
+    list.innerHTML = '';
+    txs.forEach(tx=>{
+      // Определим суммарный вход и выход
+      let delta = 0;
+      // in_msg
+      if(tx.in_msg && tx.in_msg.value) delta += Number(tx.in_msg.value);
+      // out_msgs
+      if(Array.isArray(tx.out_msgs)){
+        tx.out_msgs.forEach(m=>{ if(m.value) delta -= Number(m.value); });
+      }
+      const isIn = delta > 0;
+      const ton = Math.abs(nt2ton(delta));
+      const when = new Date((tx.utime||tx.now||Date.now())*1000).toLocaleString();
+      const leftHtml = `
+        <div class="left">
+          <div>${when}</div>
+          <div class="${isIn?'badge-in':'badge-out'}">${isIn?'Входящая':'Исходящая'}</div>
+        </div>`;
+      const rightHtml = `<div class="right">${isIn?'+':'-'}${ton.toFixed(4).replace(/\.?0+$/,'')} TON</div>`;
+      const row = document.createElement('div');
+      row.className = 'tx-item';
+      row.innerHTML = leftHtml + rightHtml;
+      list.appendChild(row);
+    });
+  }catch(e){
+    list.innerHTML = '<div class="hint">Ошибка загрузки истории</div>';
+  }
+}
+
+/* ============================
+   Telegram user (имя/аватар)
+============================ */
 (function initTelegramUser(){
   try {
     if(window.Telegram && Telegram.WebApp){
@@ -426,7 +680,9 @@ renderWalletState();
   } catch(err){ console.warn('Telegram init error', err); }
 })();
 
-/* ----------- Lottie helpers ----------- */
+/* ============================
+   Lottie helpers
+============================ */
 function loadLottieFor(el){
   const url = el.getAttribute('data-lottie-url'); el.innerHTML='';
   if(!url){ el.innerHTML='<div class="lottie-placeholder">Укажите ссылку на Lottie (.json/.tgs)</div>'; return; }
@@ -441,13 +697,13 @@ function loadLottieFor(el){
 }
 document.querySelectorAll('.media.lottie').forEach(loadLottieFor);
 
-/* ----------- Память покупок ----------- */
+/* ============================
+   Shop / Inventory logic (коротко)
+============================ */
 const PURCHASE_KEY='turbo_gifts_purchased_v1';
 function readPurchased(){ try{return JSON.parse(localStorage.getItem(PURCHASE_KEY)||'[]');}catch(e){return[];} }
 function savePurchased(list){ try{ localStorage.setItem(PURCHASE_KEY, JSON.stringify(list)); }catch(e){} }
 function addPurchased(item){ const list=readPurchased(); if(!list.some(x=>x.id===item.id)){ list.unshift(item); savePurchased(list); renderPurchasedGrid(); } }
-
-/* ----------- Рендер инвентаря ----------- */
 function createPurchasedCardNode(item){
   const a=document.createElement('article'); a.className='purchased-card'; a.setAttribute('data-purchased-id',item.id);
   const media=document.createElement('div'); media.className='media'; media.setAttribute('data-lottie-url', item.lottie||'');
@@ -460,19 +716,18 @@ function createPurchasedCardNode(item){
 }
 function renderPurchasedGrid(){
   const grid=document.getElementById('purchasedGrid'); grid.innerHTML=''; const list=readPurchased();
-  if(!list.length){ grid.innerHTML='<div style="color:var(--muted);padding:12px;grid-column:1/-1;text-align:center">Пока нет купленных подарков</div>'; return; }
+  if(!list.length){ grid.innerHTML='<div style="color:#9aa3b2;padding:12px;grid-column:1/-1;text-align:center">Пока нет купленных подарков</div>'; return; }
   list.forEach(item=> grid.appendChild(createPurchasedCardNode(item)));
 }
 
-/* ----------- Скрыть/показать проданные ----------- */
-const hideSoldCheckbox=document.getElementById('hideSold'); const soldSelector='[data-sold="true"]';
-function soldCards(){ return Array.from(document.querySelectorAll(soldSelector)); }
+/* Hide/show sold with GSAP */
+const hideSoldCheckbox=document.getElementById('hideSold');
+function soldCards(){ return Array.from(document.querySelectorAll('[data-sold="true"]')); }
 function hideSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden==='1')return; if(typeof gsap!=='undefined'){ gsap.to(c,{duration:.36,ease:'power2.out',opacity:0,scale:.98,y:-8,onComplete:()=>{c.style.display='none'; c.dataset._hidden='1';}});} else { c.style.display='none'; c.dataset._hidden='1'; } }); }
 function showSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden!=='1')return; c.style.display=''; if(typeof gsap!=='undefined'){ gsap.set(c,{opacity:0,scale:.98,y:-8}); gsap.to(c,{duration:.4,ease:'power2.out',opacity:1,scale:1,y:0,onComplete:()=>{c.dataset._hidden='0';}});} else { c.dataset._hidden='0'; } }); }
 hideSoldCheckbox.addEventListener('change', ()=>{ hideSoldCheckbox.checked ? hideSoldAnimated() : showSoldAnimated(); });
-window.addEventListener('load', ()=>{ if(hideSoldCheckbox.checked) setTimeout(hideSoldAnimated,120); else soldCards().forEach(c=>{ c.dataset._hidden='0'; c.style.display=''; c.style.opacity=1; c.style.transform='none'; }); renderPurchasedGrid(); });
 
-/* ----------- Item modal ----------- */
+/* Item modal shop */
 const itemOverlay=document.getElementById('itemOverlay');
 const modalCloseBtn=document.getElementById('modalCloseBtn');
 const modalTitle=document.getElementById('modalTitle');
@@ -483,15 +738,6 @@ const modalBuyGift=document.getElementById('modalBuyGift');
 const modalBuyPrice=document.getElementById('modalBuyPrice');
 const modalShort=document.getElementById('modalShort');
 const modalUpgradeWrap=document.getElementById('modalUpgradeWrap');
-const modalUpgrade=document.getElementById('modalUpgrade');
-
-const purchaseOverlay=document.getElementById('purchaseOverlay');
-const purchasedMedia=document.getElementById('purchasedMedia');
-const purchaseCloseBtn=document.getElementById('purchaseCloseBtn');
-
-const successOverlay=document.getElementById('successOverlay');
-const successMedia=document.getElementById('successMedia');
-const successCloseBtn=document.getElementById('successCloseBtn');
 
 let activeCard=null, lastLottieUrl=null, activeItemMeta=null;
 
@@ -519,13 +765,13 @@ function showModalForMeta(meta){
   modalBuyGift.href=meta.invoice||'#';
   modalBuyStars.href=document.getElementById('bannerBtn').href||'#';
 
+  // В купленных — не показываем никаких апгрейдов/кнопок
   if(meta.purchased){
-    modalBuyGift.classList.add('hidden');      // нельзя купить повторно
-    modalUpgradeWrap.style.display='none';     // убрать «Улучшить» при просмотре купленного
+    modalBuyGift.classList.add('hidden');
+    modalUpgradeWrap.classList.add('hidden');
   } else {
     modalBuyGift.classList.remove('hidden');
-    modalUpgradeWrap.style.display='';
-    modalUpgradeWrap.classList.add('hidden');  // не показываем для неккупленных
+    modalUpgradeWrap.classList.add('hidden');
   }
 
   modalLottie.innerHTML='';
@@ -535,63 +781,28 @@ function showModalForMeta(meta){
     modalLottie.appendChild(c); loadLottieFor(c);
   } else { modalLottie.innerHTML='<div class="lottie-placeholder">Нет анимации</div>'; }
 
-  itemOverlay.classList.add('open'); itemOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+  itemOverlay.classList.add('open'); itemOverlay.setAttribute('aria-hidden','false');
 }
 function closeItemModal(){
-  modalLottie.innerHTML=''; modalUpgradeWrap.style.display=''; modalUpgradeWrap.classList.add('hidden');
-  itemOverlay.classList.remove('open'); itemOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow='';
+  modalLottie.innerHTML=''; itemOverlay.classList.remove('open'); itemOverlay.setAttribute('aria-hidden','true');
 }
 document.querySelectorAll('.card').forEach(card=> card.addEventListener('click',()=>openItemModal(card)));
 modalCloseBtn.addEventListener('click', closeItemModal);
 itemOverlay.addEventListener('click', (e)=>{ if(e.target===itemOverlay) closeItemModal(); });
 
-/* Покупка (как было ранее; можно заменить на ваш flow) */
+/* Buy (оставлено как было) */
 modalBuyGift.addEventListener('click', (e)=>{
   e.preventDefault();
-  const price=parseInt(modalPriceValue.textContent||0,10);
   const selectedLink=(activeItemMeta&&activeItemMeta.invoice)?activeItemMeta.invoice:modalBuyGift.href||'#';
   try{
     if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.openInvoice==='function'){
       try{ Telegram.WebApp.openInvoice(selectedLink); }
-      catch(err){
-        try{
-          Telegram.WebApp.openInvoice({
-            title: modalTitle.textContent, description: modalShort.textContent || 'Подарок',
-            payload:'gift_'+Date.now(), provider_token:'YOUR_PROVIDER_TOKEN', currency:'USD', prices:[{label:'Цена',amount:price*100}],
-          }, function(res){ if(res && res.status==='paid'){ window.handlePaymentSuccessAndSave && window.handlePaymentSuccessAndSave(res); }});
-        }catch(err2){ window.open(selectedLink,'_blank'); }
-      }
+      catch(err){ window.open(selectedLink,'_blank'); }
     } else { window.open(selectedLink,'_blank'); }
-  }catch(e){ console.warn('openInvoice error',e); window.open(selectedLink,'_blank'); }
+  }catch(e){ window.open(selectedLink,'_blank'); }
 });
 
-/* SUCCESS overlay */
-function showSuccessOverlay(meta){
-  if(!meta){ meta=activeItemMeta || { id:'gift_'+Date.now(), title:modalTitle.textContent||'Подарок', price:modalPriceValue.textContent||'0', lottie:lastLottieUrl||'', invoice:modalBuyGift.href||'#' }; }
-  else { activeItemMeta=meta; }
-  successMedia.innerHTML='';
-  if(meta.lottie){ const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', meta.lottie); successMedia.appendChild(c); loadLottieFor(c);}
-  else { successMedia.innerHTML='<div class="lottie-placeholder">Нет медиа</div>'; }
-  successOverlay.classList.add('open'); successOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
-}
-function closeSuccessOverlayAndSave(){
-  if(!activeItemMeta){ activeItemMeta={ id:'gift_'+Date.now(), title:modalTitle.textContent||'Подарок', price:modalPriceValue.textContent||'0', lottie:lastLottieUrl||'', invoice:modalBuyGift.href||'#' }; }
-  addPurchased({ id:activeItemMeta.id, title:activeItemMeta.title, price:activeItemMeta.price||modalPriceValue.textContent||'0', lottie:activeItemMeta.lottie||lastLottieUrl||'', invoice:activeItemMeta.invoice||modalBuyGift.href||'#' });
-  successMedia.innerHTML=''; successOverlay.classList.remove('open'); successOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; renderPurchasedGrid();
-}
-successCloseBtn.addEventListener('click', closeSuccessOverlayAndSave);
-successOverlay.addEventListener('click', (e)=>{ if(e.target===successOverlay) closeSuccessOverlayAndSave(); });
-
-window.handlePaymentSuccessAndSave=function(paymentData){
-  if(!activeItemMeta){ activeItemMeta={ id:'gift_'+Date.now(), title:(paymentData && paymentData.title)||modalTitle.textContent||'Подарок', price:(paymentData && paymentData.price)||modalPriceValue.textContent||'0', lottie:lastLottieUrl||'', invoice:modalBuyGift.href||'#', purchased:true }; }
-  showSuccessOverlay(activeItemMeta);
-};
-window.handlePaymentSuccess=function(){ closeItemModal(); purchasedMedia.innerHTML=''; const l=activeItemMeta?.lottie || lastLottieUrl; if(l){ const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', l); purchasedMedia.appendChild(c); loadLottieFor(c);} else { purchasedMedia.innerHTML='<div class="lottie-placeholder">Нет медиа</div>'; } purchaseOverlay.classList.add('open'); purchaseOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; };
-function closePurchaseModal(){ purchasedMedia.innerHTML=''; purchaseOverlay.classList.remove('open'); purchaseOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
-purchaseCloseBtn.addEventListener('click', closePurchaseModal);
-purchaseOverlay.addEventListener('click',(e)=>{ if(e.target===purchaseOverlay) closePurchaseModal(); });
-
-/* Tabbar */
+/* Tabs switching */
 document.querySelectorAll('.tabs .tab').forEach(tab=>{
   tab.addEventListener('click', ()=>{
     document.querySelectorAll('.tabs .tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
@@ -602,21 +813,12 @@ document.querySelectorAll('.tabs .tab').forEach(tab=>{
   });
 });
 
-/* Telegram invoiceClosed -> success */
-(function attachInvoiceClosed(){
-  try{
-    if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.onEvent==='function'){
-      Telegram.WebApp.onEvent("invoiceClosed", (event)=>{ try{ if(event && event.status==="paid"){ showSuccessOverlay(activeItemMeta); } }catch(e){} });
-    } else if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.on==='function'){
-      Telegram.WebApp.on('invoiceClosed', (event)=>{ if(event && event.status==="paid"){ showSuccessOverlay(activeItemMeta); } });
-    }
-  }catch(err){ console.warn('attachInvoiceClosed error', err); }
-})();
-
-/* Init purchased grid on start */
-document.addEventListener('DOMContentLoaded', renderPurchasedGrid);
-
-/* GSAP warn */
+/* Init purchased + sold state at load */
+window.addEventListener('load', ()=>{
+  if(hideSoldCheckbox.checked) setTimeout(hideSoldAnimated,120);
+  else soldCards().forEach(c=>{ c.dataset._hidden='0'; c.style.display=''; c.style.opacity=1; c.style.transform='none'; });
+  renderPurchasedGrid();
+});
 if(typeof gsap==='undefined') console.warn('GSAP не загружен — анимации упрощены.');
 </script>
 </body>
