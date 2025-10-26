@@ -25,11 +25,12 @@
   --accent-blue-end:#6aa8ff;
   --gold:#FFD14B;
   --radius:18px;
-  --card-footer-h:56px; 
-  --tab-size:46px; 
+  --card-footer-h:56px;
+  --tab-size:46px;
   --shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
+/* Reset */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -47,7 +48,7 @@ body{
   max-width: 560px;
   margin: 0 auto;
   min-height: 100vh;
-  padding-bottom: calc(var(--tab-size) + 28px); 
+  padding-bottom: calc(var(--tab-size) + 28px);
 }
 
 /* --- Topbar --- */
@@ -59,14 +60,45 @@ body{
   background: linear-gradient(180deg, rgba(15,17,22,.98), rgba(15,17,22,.92) 70%, rgba(15,17,22,0));
   border-bottom: 1px solid rgba(255,255,255,.04);
   backdrop-filter: blur(6px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 }
-.profile{ display:flex; align-items:center; gap:8px; }
+.profile{ display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
 .avatar{
   width:40px; height:40px; border-radius:50%;
   background:#222; background-position:center; background-size:cover;
   border:2px solid #303544; flex-shrink:0;
 }
 .name{ font-weight:700; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* --- Wallet button in top-right (like on photo) --- */
+.wallet-wrap{
+  display:flex; align-items:center; gap:8px;
+  margin-left:8px;
+}
+.wallet-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background: linear-gradient(90deg,var(--accent-blue-start),var(--accent-blue-end));
+  color:white;
+  font-weight:800;
+  padding:10px 14px;
+  border-radius:28px;
+  box-shadow: 0 6px 18px rgba(30,110,200,0.22);
+  cursor:pointer;
+  border:0;
+  font-size:14px;
+}
+.wallet-btn .addr{ font-weight:800; white-space:nowrap; max-width:160px; overflow:hidden; text-overflow:ellipsis; display:inline-block; vertical-align:middle; }
+.wallet-btn .caret{ width:14px; height:14px; display:inline-block; transform:translateY(1px); }
+
+/* when disconnected */
+.wallet-btn.disconnected{
+  background: linear-gradient(90deg,#2b3345,#3a4050);
+  color:#cbd6ee;
+}
 
 /* --- Banner --- */
 .banner{
@@ -118,7 +150,7 @@ body{
   align-items:start;
 }
 
-/* --- Card --- */
+/* --- Card (market) --- */
 .card{
   position:relative;
   overflow:hidden;
@@ -127,7 +159,7 @@ body{
   border:1px solid #262c41;
   width:100%;
   max-width: 260px;
-  height: 260px; 
+  height: 260px;
   display:flex;
   flex-direction:column;
   justify-content:flex-end;
@@ -222,7 +254,6 @@ body{
 }
 .overlay.open, .purchase-overlay.open{ display:flex; }
 
-/* modal stretches full screen now */
 .modal-card{
   width:100%; height:100%; max-height:100vh;
   background: linear-gradient(180deg,#0f1116,#0b0d10);
@@ -241,7 +272,7 @@ body{
 /* --> SQUARE area for gift inside modal */
 .modal-media-wrap{
   width:95%; max-width:520px;
-  aspect-ratio: 1 / 1; /* важная часть — делает ровный квадрат */
+  aspect-ratio: 1 / 1;
   display:flex; align-items:center; justify-content:center;
   border-radius:14px;
   background: linear-gradient(180deg, rgba(20,22,28,0.45), rgba(8,9,12,0.35));
@@ -289,7 +320,6 @@ body{
 }
 .success-overlay.open{ display:flex; }
 
-/* success card centers animation and text, button at bottom */
 .success-card{
   width:100%; max-width:720px; height:100%; max-height:100vh;
   display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
@@ -358,7 +388,7 @@ body{
   border-radius:2px;
 }
 
-/* purchased gifts grid */
+/* purchased gifts grid — карточки выглядят как в маркете, но чуть меньше */
 .purchased-grid{
   width:100%;
   display:grid;
@@ -368,18 +398,23 @@ body{
   box-sizing:border-box;
 }
 .purchased-card{
-  background: linear-gradient(120deg,#0f1318,#0b0e12);
-  border:1px solid rgba(255,255,255,0.03);
-  border-radius:12px;
+  /* reuse market styles but smaller */
+  position:relative;
   overflow:hidden;
+  border-radius:14px;
+  background: radial-gradient(120% 120% at 0% 0%, #1f2535 0%, #161a26 40%, #0f1116 100%);
+  border:1px solid #232734;
+  width:100%;
+  max-width: 220px;
+  height: 220px;
   display:flex;
   flex-direction:column;
-  align-items:center;
   justify-content:flex-end;
-  height:160px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.4);
+  transition: transform .12s ease;
   cursor:pointer;
 }
-.purchased-card .media{ position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:8px; }
+.purchased-card .media{ position: absolute; left:0; right:0; top:0; height: calc(100% - 44px); display:flex; align-items:center; justify-content:center; padding:10px; }
 .purchased-card .footer{ height:44px; display:flex; align-items:center; justify-content:center; width:100%; background:transparent; border-top:1px solid rgba(255,255,255,0.02);}
 
 /* disabled Improve button (non-functional) */
@@ -395,18 +430,28 @@ body{
 
 @media (max-width:420px){
   .modal-media-wrap{ max-width: 92%; }
-  .purchased-card{ height:140px; }
+  .purchased-card{ height:180px; max-width: 48%; }
   .success-media{ width:88%; }
 }
 </style>
 </head>
 <body>
-  <div class="app">
+  <div class="app" id="mainApp">
     <!-- Topbar -->
     <div class="topbar">
-      <div class="profile">
+      <div class="profile" aria-hidden="false">
         <div id="avatar" class="avatar" aria-hidden="true"></div>
         <div id="userName" class="name">User</div>
+      </div>
+
+      <!-- Wallet connect (top-right) -->
+      <div class="wallet-wrap" aria-hidden="false">
+        <button id="walletBtn" class="wallet-btn disconnected" aria-label="Подключить TON кошелек" title="Подключить TON кошелек">
+          <span class="addr" id="walletLabel">Connect TON</span>
+          <svg class="caret" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -424,7 +469,7 @@ body{
 
     <!-- Grid -->
     <div class="grid" id="cardsGrid" aria-live="polite">
-      <article class="card" id="card1" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="1 из 100">
+      <article class="card" id="card1" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Cute sticker — 1 из 100">
         <div class="ribbon stock" aria-hidden="true">1 из 100</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/sticker.json">
           <div class="lottie-placeholder">Lottie animation 1</div>
@@ -436,7 +481,7 @@ body{
           </div>
         </div>
       </article>
-      <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="1 из 50">
+      <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Dog sticker — 1 из 50">
         <div class="ribbon stock" aria-hidden="true">1 из 50</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/002_DOG%20(1).json">
           <div class="lottie-placeholder">Lottie animation 2</div>
@@ -460,7 +505,7 @@ body{
       <div class="tab" role="tab" aria-selected="false" id="tab2" title="Tab 2">
         <img src="https://dummyimage.com/64x64/2b3345/ffffff&text=2" alt="tab2 icon">
       </div>
-      <div class="tab" role="tab" aria-selected="false" id="tab3" title="Tab 3">
+      <div class="tab" role="tab" aria-selected="false" id="tab3" title="Inventory" >
         <img src="https://dummyimage.com/64x64/2b3345/ffffff&text=3" alt="tab3 icon">
       </div>
     </div>
@@ -506,8 +551,8 @@ body{
           <!-- buy button (visible for not-yet-purchased items) -->
           <a id="modalBuyGift" class="btn-primary" href="#" target="_blank" rel="noopener noreferrer">Купить подарок — ★ <span id="modalBuyPrice">15</span></a>
 
-          <!-- upgrade button (appears for purchased items, disabled) -->
-          <div id="modalUpgradeWrap" class="hidden">
+          <!-- upgrade button (appears for purchased items) - we'll hide it on purchased item open -->
+          <div id="modalUpgradeWrap" class="">
             <a id="modalUpgrade" class="btn-upgrade disabled">Улучшить</a>
           </div>
         </div>
@@ -537,14 +582,74 @@ body{
 
 <script>
 /* ===========================
-  Расширения:
-  - Square modal media (aspect-ratio)
-  - Telegram.WebApp.openInvoice(selectedLink) usage
-  - Сохранение купленных подарков в localStorage
-  - Вкладка 3: профиль + сохраненные покупки (2 в ряд)
-  - После оплаты: показываем SUCCESS modal (анимация + заголовок + большая синяя кнопка)
-  - При закрытии SUCCESS modal: добавляем подарок в инвентарь и рендерим вкладку 3
+  Дополнения:
+  - TOP-RIGHT: роль кнопки "Подключить TON-кошелек" (имитация)
+  - Вкладка "Инвентарь": карточки выглядят как на маркете, но чуть меньше.
+  - При открытии купленной карточки: кнопка "Улучшить" скрывается полностью.
+  - Всё в одном файле.
   =========================== */
+
+/* ---------- Wallet mock: top-right ---------- */
+const WALLET_KEY = 'turbo_gifts_ton_wallet_v1';
+const walletBtn = document.getElementById('walletBtn');
+const walletLabel = document.getElementById('walletLabel');
+
+function truncateAddr(addr){
+  if(!addr) return 'Connect TON';
+  if(addr.length <= 10) return addr;
+  return addr.slice(0,4) + '…' + addr.slice(-4);
+}
+
+function getSavedWallet(){
+  try { return JSON.parse(localStorage.getItem(WALLET_KEY) || 'null'); } catch(e){ return null; }
+}
+function saveWallet(obj){
+  try { localStorage.setItem(WALLET_KEY, JSON.stringify(obj)); } catch(e){}
+}
+function clearWallet(){
+  try { localStorage.removeItem(WALLET_KEY); } catch(e){}
+}
+
+/* render wallet UI on load */
+function renderWalletUI(){
+  const w = getSavedWallet();
+  if(w && w.address){
+    walletLabel.textContent = truncateAddr(w.address);
+    walletBtn.classList.remove('disconnected');
+    walletBtn.setAttribute('aria-label','TON кошелёк подключён. Нажмите, чтобы отключить.');
+    walletBtn.title = 'Нажмите, чтобы отключить кошелек';
+  } else {
+    walletLabel.textContent = 'Connect TON';
+    walletBtn.classList.add('disconnected');
+    walletBtn.setAttribute('aria-label','Подключить TON кошелёк');
+    walletBtn.title = 'Подключить TON кошелёк';
+  }
+}
+
+/* simulate connecting to TON wallet (mock) */
+walletBtn.addEventListener('click', (e)=>{
+  const current = getSavedWallet();
+  if(current && current.address){
+    // toggle: disconnect
+    if(confirm('Отключить TON кошелёк?')) {
+      clearWallet();
+      renderWalletUI();
+    }
+    return;
+  }
+  // simulate connection with a mock address (in real app покажите окно кошелька)
+  // For a better UX we can prompt user to paste address — keep simple: use mock or prompt.
+  let addr = prompt('Вставьте адрес TON-кошелька или нажмите Отмена для автозаполнения тестовым адресом:');
+  if(!addr){
+    // mock example from your screenshot-ish (truncated shown)
+    addr = 'UQBoabcdefghijklmnoT0YX';
+  }
+  saveWallet({ address: addr, connectedAt: Date.now() });
+  renderWalletUI();
+});
+
+/* init wallet UI quickly */
+renderWalletUI();
 
 /* ---------- Telegram WebApp: имя и аватар (инициализация) ---------- */
 (function initTelegramUser(){
@@ -641,7 +746,7 @@ function loadLottieFor(el){
   el.innerHTML = '<div class="lottie-placeholder">Неподдерживаемый формат</div>';
 }
 
-/* Загрузим карточные Lottie (фулл) */
+/* Load lotties for initial grid */
 document.querySelectorAll('.media.lottie').forEach(loadLottieFor);
 
 /* ---------- Persisted purchased gifts (localStorage) ---------- */
@@ -655,10 +760,9 @@ function savePurchased(list){
 }
 function addPurchased(item){
   const list = readPurchased();
-  // avoid duplicates: compare by id
   const exists = list.some(x => x.id === item.id);
   if(!exists){
-    list.unshift(item); // latest first
+    list.unshift(item);
     savePurchased(list);
     renderPurchasedGrid();
   }
@@ -698,7 +802,7 @@ function createPurchasedCardNode(item){
   media.appendChild(inner);
   loadLottieFor(inner);
 
-  // click opens modal (but this is purchased item: show upgrade button disabled)
+  // click opens modal (for purchased item)
   a.addEventListener('click', (e)=>{
     openItemModalFromPurchased(item, a);
   });
@@ -788,17 +892,19 @@ function showModalForMeta(meta){
   modalTitle.textContent = meta.title || 'Подарок';
   modalPriceValue.textContent = meta.price || '0';
   modalBuyPrice.textContent = meta.price || '0';
-  modalShort.textContent = ''; 
+  modalShort.textContent = '';
   modalBuyGift.href = meta.invoice || '#';
   modalBuyStars.href = document.getElementById('bannerBtn').href || '#';
 
-  // determine purchased state
+  // determine purchased state: if purchased — hide buy button and hide upgrade completely
   if(meta.purchased){
     modalBuyGift.classList.add('hidden');
-    modalUpgradeWrap.classList.remove('hidden');
+    // remove/hide upgrade UI entirely for purchased items (user requested убрать кнопку "Улучшить" при нажатии)
+    modalUpgradeWrap.style.display = 'none';
   } else {
     modalBuyGift.classList.remove('hidden');
-    modalUpgradeWrap.classList.add('hidden');
+    modalUpgradeWrap.style.display = ''; // show wrapper (if needed)
+    modalUpgradeWrap.classList.add('hidden'); // by default not visible for not purchased
   }
 
   // load lottie into modalLottie
@@ -820,6 +926,9 @@ function showModalForMeta(meta){
 
 function closeItemModal(){
   modalLottie.innerHTML = '';
+  // reset upgrade wrap visibility (so when next time opening non-purchased item it can appear)
+  modalUpgradeWrap.style.display = '';
+  modalUpgradeWrap.classList.add('hidden');
   itemOverlay.classList.remove('open'); itemOverlay.setAttribute('aria-hidden','true');
   document.body.style.overflow = '';
 }
@@ -836,67 +945,44 @@ modalCloseBtn.addEventListener('click', closeItemModal);
 itemOverlay.addEventListener('click', (e)=>{ if(e.target === itemOverlay) closeItemModal(); });
 
 /* ---------- Payment: openInvoice using selectedLink string approach ---------- */
-/* The user requested the exact call: 
-   let selectedLink = "https://t.me/$OEtEnkq..."; 
-   Telegram.WebApp.openInvoice(selectedLink);
-   if (event.status === "paid") { ... }
-*/
 modalBuyGift.addEventListener('click', (e)=>{
   e.preventDefault();
   const price = parseInt(modalPriceValue.textContent||0,10);
-
-  // get selectedLink from activeItemMeta or href
   const selectedLink = (activeItemMeta && activeItemMeta.invoice) ? activeItemMeta.invoice : modalBuyGift.href || '#';
 
-  // If Telegram openInvoice accepts string (as you requested), call it.
   try {
     if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.openInvoice === 'function'){
-      // call as string (user insisted). If platform supports object, it may still work.
       try {
-        // Some platforms expect object, some not. Call with string first.
         Telegram.WebApp.openInvoice(selectedLink);
       } catch (err) {
-        // fallback: try object format (safe)
         try {
           Telegram.WebApp.openInvoice({
             title: modalTitle.textContent,
             description: modalShort.textContent || 'Подарок',
             payload: 'gift_' + Date.now(),
-            provider_token: 'YOUR_PROVIDER_TOKEN', // <-- замените
+            provider_token: 'YOUR_PROVIDER_TOKEN',
             currency: 'USD',
             prices: [{label:'Цена', amount: price*100}],
           }, function(invoiceResult){
-            if(invoiceResult && invoiceResult.status === 'paid'){ 
-              // старый коллбек — сохраняем и показываем success
+            if(invoiceResult && invoiceResult.status === 'paid'){
               window.handlePaymentSuccessAndSave && window.handlePaymentSuccessAndSave(invoiceResult);
             }
           });
         } catch (err2) {
-          // final fallback: open link in new tab
           window.open(selectedLink, '_blank');
         }
       }
     } else {
-      // no telegram SDK — open link in new tab
       window.open(selectedLink, '_blank');
     }
   } catch(e){
     console.warn('openInvoice error', e);
     window.open(selectedLink, '_blank');
   }
-
-  // Note: your backend / bot should call window.handlePaymentSuccess() or trigger the event.
 });
 
 /* ---------- Success modal behavior (new) ---------- */
-/**
- * showSuccessOverlay(meta)
- *   - shows modal with animation and texts
- *   - doesn't immediately add to inventory
- *   - waiting user to press "Закрыть", then adds to inventory
- */
 function showSuccessOverlay(meta){
-  // ensure meta exists
   if(!meta){
     meta = activeItemMeta || {
       id: 'gift_'+Date.now(),
@@ -909,10 +995,8 @@ function showSuccessOverlay(meta){
     activeItemMeta = meta;
   }
 
-  // clear any previous animation
   successMedia.innerHTML = '';
 
-  // load media
   if(meta.lottie){
     const c = document.createElement('div');
     c.style.width = '100%'; c.style.height = '100%';
@@ -923,7 +1007,6 @@ function showSuccessOverlay(meta){
     successMedia.innerHTML = '<div class="lottie-placeholder">Нет медиа</div>';
   }
 
-  // show overlay
   successOverlay.classList.add('open');
   successOverlay.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
@@ -931,7 +1014,6 @@ function showSuccessOverlay(meta){
 
 /* close success overlay: add to inventory then close */
 function closeSuccessOverlayAndSave(){
-  // ensure activeItemMeta exists
   if(!activeItemMeta){
     activeItemMeta = {
       id: 'gift_' + Date.now(),
@@ -942,7 +1024,6 @@ function closeSuccessOverlayAndSave(){
     };
   }
 
-  // save to purchased list
   const saveItem = {
     id: activeItemMeta.id || ('gift_'+Date.now()),
     title: activeItemMeta.title || 'Подарок',
@@ -952,31 +1033,21 @@ function closeSuccessOverlayAndSave(){
   };
   addPurchased(saveItem);
 
-  // close overlay
   successMedia.innerHTML = '';
   successOverlay.classList.remove('open');
   successOverlay.setAttribute('aria-hidden','true');
   document.body.style.overflow = '';
 
-  // ensure purchased grid updates
   renderPurchasedGrid();
 }
 
-/* bind success close */
 successCloseBtn.addEventListener('click', ()=>{
   closeSuccessOverlayAndSave();
 });
 successOverlay.addEventListener('click', (e)=>{ if(e.target === successOverlay) closeSuccessOverlayAndSave(); });
 
 /* ---------- Payment success handler (public) ---------- */
-/* Two helper functions:
-   - handlePaymentSuccessAndSave: will save activeItemMeta into purchased list and show purchase overlay [kept for backward compatibility]
-   - handlePaymentSuccess: opens purchase view (kept)
-   - New: when invoiceClosed event comes from Telegram we show success overlay (then user closes to save)
-*/
 window.handlePaymentSuccessAndSave = function(paymentData){
-  // If called from bot/backend, we want to show success overlay and then save when user closes
-  // Build activeItemMeta if missing
   if(!activeItemMeta){
     activeItemMeta = {
       id: 'gift_'+Date.now(),
@@ -987,17 +1058,13 @@ window.handlePaymentSuccessAndSave = function(paymentData){
       purchased: true
     };
   }
-
-  // Show success overlay (user will close to save)
   showSuccessOverlay(activeItemMeta);
 };
 
-/* simple open purchase overlay (show animation) - kept for compatibility */
 window.handlePaymentSuccess = function(paymentData){
   closeItemModal();
 
   purchasedMedia.innerHTML = '';
-  // show purchased animation (try activeItemMeta or lastLottieUrl)
   let lottieUrl = (activeItemMeta && activeItemMeta.lottie) ? activeItemMeta.lottie : lastLottieUrl || null;
   if(lottieUrl){
     const c = document.createElement('div');
@@ -1013,14 +1080,13 @@ window.handlePaymentSuccess = function(paymentData){
   document.body.style.overflow = 'hidden';
 };
 
-/* old close purchase modal */
 function closePurchaseModal(){ purchasedMedia.innerHTML=''; purchaseOverlay.classList.remove('open'); purchaseOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
 purchaseCloseBtn.addEventListener('click', closePurchaseModal);
 purchaseOverlay.addEventListener('click',(e)=>{ if(e.target === purchaseOverlay) closePurchaseModal(); });
 
 /* ---------- Modal: Upgrade button behavior (disabled) ---------- */
 modalUpgrade.addEventListener('click', (e)=>{
-  // intentionally disabled (non-functional) — visual only
+  // visually disabled - do nothing
   e.preventDefault();
   return false;
 });
@@ -1031,18 +1097,14 @@ document.querySelectorAll('.tabs .tab').forEach(tab=>{
     document.querySelectorAll('.tabs .tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
     tab.classList.add('active'); tab.setAttribute('aria-selected','true');
 
-    // show/hide main app grid and tab3 content
-    const mainApp = document.querySelector('.app');
+    const mainApp = document.getElementById('mainApp');
     const tab3 = document.getElementById('tab3Content');
     if(tab.id === 'tab3'){
-      // hide main grid visually and show tab3 content
       mainApp.style.display = 'none';
       tab3.classList.add('open');
       tab3.setAttribute('aria-hidden','false');
-      // render purchased grid each time just in case
       renderPurchasedGrid();
     } else {
-      // show main app, hide tab3
       mainApp.style.display = '';
       tab3.classList.remove('open');
       tab3.setAttribute('aria-hidden','true');
@@ -1054,11 +1116,9 @@ document.querySelectorAll('.tabs .tab').forEach(tab=>{
 (function attachInvoiceClosed(){
   try {
     if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.onEvent === 'function'){
-      // listen to invoice closed events
       Telegram.WebApp.onEvent("invoiceClosed", function(event) {
         try {
           if(event && event.status === "paid"){
-            // show success overlay and keep activeItemMeta (if set) — user will close to save
             showSuccessOverlay(activeItemMeta);
           } else {
             console.log('Invoice closed with status', event && event.status);
@@ -1068,7 +1128,6 @@ document.querySelectorAll('.tabs .tab').forEach(tab=>{
         }
       });
     } else {
-      // fallback: sometimes WebApp exposes on event differently
       if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.on === 'function'){
         Telegram.WebApp.on('invoiceClosed', function(event){
           if(event && event.status === "paid"){
@@ -1081,9 +1140,6 @@ document.querySelectorAll('.tabs .tab').forEach(tab=>{
     console.warn('attachInvoiceClosed error', err);
   }
 })();
-
-/* ---------- helpers: when opening a purchased item modal, swap buttons ---------- */
-/* Already handled in showModalForMeta() by checking meta.purchased */
 
 /* ---------- resize handler ---------- */
 let resizeTimer = null;
