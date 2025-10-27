@@ -424,11 +424,16 @@ function showToast(text){
   }
 }
 
-/* ========= TON CONNECT ========= */
 const tonUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: MANIFEST_URL,
-  actionsConfiguration: { twaReturnUrl: 'https://t.me' }
+  buttonRootId: null,
+  actionsConfiguration: {
+    twaReturnUrl: Telegram?.WebApp?.initDataUnsafe?.start_param
+      ? `https://t.me/${Telegram.WebApp.initDataUnsafe.start_param}`
+      : "https://t.me" // важно для mini app!!!
+  }
 });
+
 
 /* ========= INTERNAL BALANCE + HISTORY ========= */
 function readBalance(){ return Number(localStorage.getItem(APP_BALANCE_KEY) || '0'); }
@@ -562,9 +567,10 @@ async function findOutgoingToMerchant(fromAddress, expectedNano, lookBackSec=300
   return { found:false };
 }
 
+// ================= Deposit TON (instant credit + Tonkeeper popup) =================
 depositBtn.addEventListener('click', async () => {
   if (!tonUI.connected) {
-    await tonUI.openModal(); // если кошелёк не подключён, открываем TonConnect
+    await tonUI.openModal(); // если кошелёк не подключён, сначала подключаем
     return;
   }
 
@@ -574,25 +580,25 @@ depositBtn.addEventListener('click', async () => {
     return;
   }
 
-  const nanoAmount = (amount * 1e9).toFixed(0);
+  const nanoAmount = (amount * 1e9).toFixed(0); // конвертируем в nanoTON
 
   try {
-    // ✅ Вызов системного окна TonKeeper (как на твоих скринах)
+    // ✅ Открываем системное окно Tonkeeper внутри Mini App
     await tonUI.sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
       messages: [
         {
-          address: MERCHANT_ADDRESS,
+          address: MERCHANT_ADDRESS, // Твой TON адрес получателя
           amount: nanoAmount
         }
       ]
     });
 
-    // ✅ МГНОВЕННОЕ зачисление на баланс Mini App — без ожиданий
+    // ✅ Мгновенное зачисление на внутренний баланс Mini App
     const newBalance = readBalance() + amount;
     writeBalance(newBalance);
 
-    // ✅ История
+    // ✅ Добавляем в историю
     addHistory({
       type: 'deposit',
       amount,
@@ -600,15 +606,16 @@ depositBtn.addEventListener('click', async () => {
       from: tonUI.account.address
     });
 
+    // ✅ Очищаем поле
     amountInput.value = '';
     setWalletTab('history');
 
-    // ✅ Toast уведомление
-    showToast(`+${amount} TON зачислено ✅`);
+    // ✅ Уведомление
+    showToast(`+${amount} TON зачислено ✅`, "success");
 
   } catch (err) {
     console.error('Deposit error:', err);
-    alert('Транзакция отменена');
+    alert('Транзакция отменена ❌');
   }
 });
 
