@@ -216,6 +216,64 @@ body{
 }
 .toast img{ width:16px; height:16px; object-fit:contain; display:block; }
 .toast.show{ pointer-events:auto; }
+
+/* ===== History (TON style) ===== */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 2px 20px;
+}
+
+.history-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9aa3b2;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-left: 2px;
+}
+
+.history-item {
+  background: #121722;
+  border: 1px solid #1f2633;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: white;
+}
+
+.history-time {
+  font-size: 12px;
+  color: #8b93a7;
+}
+
+.history-amount {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.plus {
+  color: #4cd964; /* GREEN */
+}
+
+.minus {
+  color: #ff3b30; /* RED */
+}
+
 </style>
 </head>
 <body>
@@ -378,10 +436,11 @@ body{
       </div>
 
       <div id="panelHistory" class="tab-panel">
-        <div class="small">История мини-аппа</div>
-        <div id="txList" class="tx-list"></div>
-      </div>
-    </div>
+  <div id="historyList" class="history-list">
+    <!-- История будет рендериться здесь -->
+  </div>
+</div>
+
   </div>
 
   <!-- Toast -->
@@ -616,29 +675,76 @@ depositBtn.addEventListener('click', async () => {
 
 
 
-/* ========= History render (mini-app only) ========= */
-function renderHistory(){
+function renderHistory() {
   const list = readHistory();
-  txList.innerHTML = '';
-  if(!list.length){ txList.innerHTML = '<div class="small">История пуста</div>'; return; }
-  for(const r of list){
-    const row = document.createElement('div'); row.className='tx-item';
-    const left = document.createElement('div'); left.className='left';
-    const title = document.createElement('div'); const when = new Date(r.date||Date.now()).toLocaleString(); 
-    const date = document.createElement('div'); date.className='date'; date.textContent = when;
-    const right = document.createElement('div'); right.className='amount';
-    if(r.type==='deposit'){
-      title.textContent = 'Пополнение ('+(r.from||'wallet')+')'; right.textContent = '+'+Number(r.amount).toFixed(4)+' TON';
-    } else if(r.type==='purchase'){
-      title.textContent = 'Покупка: '+(r.item||'gift'); right.textContent = Number(r.amount).toFixed(4)+' TON';
-    } else {
-      title.textContent = r.type||'Операция'; right.textContent = (r.amount>0?'+':'')+Number(r.amount).toFixed(4)+' TON';
-    }
-    left.appendChild(title); left.appendChild(date);
-    row.appendChild(left); row.appendChild(right);
-    txList.appendChild(row);
+  const historyList = document.getElementById('historyList');
+  historyList.innerHTML = '';
+
+  if (!list.length) {
+    historyList.innerHTML = `<div style="color:#8b93a7;text-align:center;padding:10px;">No transactions yet</div>`;
+    return;
   }
+
+  // группировка по датам
+  const groups = {};
+  list.forEach(tx => {
+    const date = new Date(tx.date).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    }).toUpperCase();
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(tx);
+  });
+
+  Object.keys(groups).forEach(date => {
+    // дата
+    const dateEl = document.createElement('div');
+    dateEl.className = 'history-date';
+    dateEl.textContent = date;
+    historyList.appendChild(dateEl);
+
+    // транзакции за этот день
+    groups[date].forEach(tx => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+
+      // левая часть
+      const left = document.createElement('div');
+      left.className = 'history-left';
+
+      const title = document.createElement('div');
+      title.className = 'history-title';
+      if (tx.type === 'deposit') title.textContent = 'Deposit';
+      else if (tx.type === 'purchase') title.textContent = `Purchase — ${tx.item}`;
+      else title.textContent = 'Operation';
+
+      const time = document.createElement('div');
+      time.className = 'history-time';
+      time.textContent = new Date(tx.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      left.appendChild(title);
+      left.appendChild(time);
+
+      // правая часть (сума)
+      const amount = document.createElement('div');
+      amount.className = 'history-amount';
+      if (tx.type === 'deposit') {
+        amount.classList.add('plus');
+        amount.textContent = `+${tx.amount} TON`;
+      } else {
+        amount.classList.add('minus');
+        // если покупка оплачена TON
+        if (tx.payWith === 'ton') amount.textContent = `-${tx.amount} TON`;
+        // если покупка звездами
+        else amount.textContent = `-${tx.amount} ⭐`;
+      }
+
+      item.appendChild(left);
+      item.appendChild(amount);
+      historyList.appendChild(item);
+    });
+  });
 }
+
 
 /* ========= Inventory storage ========= */
 const PURCHASE_KEY = 'turbo_gifts_purchased_v1';
