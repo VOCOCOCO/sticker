@@ -562,46 +562,56 @@ async function findOutgoingToMerchant(fromAddress, expectedNano, lookBackSec=300
   return { found:false };
 }
 
-/* ========= Deposit flow (TON only, системное окно) ========= */
-depositBtn.addEventListener('click', async ()=>{
-  if(!tonUI.connected){ await tonUI.openModal(); return; }
-  const amt = Number(amountInput.value);
-  if(!amt || amt<=0){ alert('Укажи сумму в TON'); return; }
-  const nano = toNano(amt);
+depositBtn.addEventListener('click', async () => {
+  if (!tonUI.connected) {
+    await tonUI.openModal(); // если кошелёк не подключён, открываем TonConnect
+    return;
+  }
 
-  try{
-    // 1) Вызов системного окна подтверждения (как при connect)
+  const amount = Number(amountInput.value);
+  if (!amount || amount <= 0) {
+    alert('Введите сумму TON');
+    return;
+  }
+
+  const nanoAmount = (amount * 1e9).toFixed(0);
+
+  try {
+    // ✅ Вызов системного окна TonKeeper (как на твоих скринах)
     await tonUI.sendTransaction({
-      validUntil: Math.floor(Date.now()/1000) + 300,
-      messages:[{ address: MERCHANT_ADDRESS, amount: nano }]
+      validUntil: Math.floor(Date.now() / 1000) + 300,
+      messages: [
+        {
+          address: MERCHANT_ADDRESS,
+          amount: nanoAmount
+        }
+      ]
     });
 
-    // 2) После возвращения — ждём появления транзакции в сети и зачисляем 0% комиссии
-    const addr = tonUI.account.address;
-    const until = Date.now() + 90000;
-    let credited = false;
-    while(Date.now() < until){
-      const r = await findOutgoingToMerchant(addr, nano, 600);
-      if(r.found){
-        const newBal = readBalance() + amt;
-        writeBalance(newBal);
-        addHistory({ type:'deposit', amount: amt, date: Date.now(), from: truncate(addr) });
-        setWalletTab('history');
-        amountInput.value = '';
-        showToast(`Баланс пополнен на ${amt.toFixed(4)} TON`);
-        credited = true;
-        break;
-      }
-      await new Promise(res=>setTimeout(res, 3500));
-    }
-    if(!credited){
-      alert('Транзакция не найдена сразу. Баланс обновится после подтверждения в сети.');
-    }
-  }catch(e){
-    console.warn('sendTransaction error', e);
-    alert('Операция отменена или ошибка');
+    // ✅ МГНОВЕННОЕ зачисление на баланс Mini App — без ожиданий
+    const newBalance = readBalance() + amount;
+    writeBalance(newBalance);
+
+    // ✅ История
+    addHistory({
+      type: 'deposit',
+      amount,
+      date: Date.now(),
+      from: tonUI.account.address
+    });
+
+    amountInput.value = '';
+    setWalletTab('history');
+
+    // ✅ Toast уведомление
+    showToast(`+${amount} TON зачислено ✅`);
+
+  } catch (err) {
+    console.error('Deposit error:', err);
+    alert('Транзакция отменена');
   }
 });
+
 
 /* ========= History render (mini-app only) ========= */
 function renderHistory(){
