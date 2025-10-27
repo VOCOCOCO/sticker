@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Turbo Gifts — stickers & TON Connect</title>
+<title>Turbo Gifts — Stickers, TON balance & Stars</title>
 
 <!-- Telegram Web Apps SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- Lottie (.json) -->
+<!-- lottie-web (.json) -->
 <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 <!-- rlottie (.tgs) -->
 <script src="https://cdn.jsdelivr.net/npm/rlottie@2.6.0/dist/rlottie.min.js"></script>
-<!-- GSAP -->
+<!-- GSAP (микроанимации) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
 <!-- TON Connect UI -->
 <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 
@@ -24,13 +25,17 @@
   --card-bg:#1a1e2a;
   --text:#ffffff;
   --muted:#c8cdd6;
-  --primary-start:#3abefc;
-  --primary-end:#6aa8ff;
+  --accent-blue-start:#3abefc;
+  --accent-blue-end:#6aa8ff;
+  --gold:#FFD14B;
   --radius:18px;
   --card-footer-h:56px;
   --tab-size:46px;
   --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --ton:#27A6E5;
 }
+
+/* Reset & base */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -39,6 +44,8 @@ body{
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   line-height:1.35;
 }
+
+/* App shell */
 .app{ max-width:560px; margin:0 auto; min-height:100vh; padding-bottom:calc(var(--tab-size) + 28px); }
 
 /* Topbar */
@@ -52,56 +59,56 @@ body{
 .avatar{ width:40px; height:40px; border-radius:50%; background:#222 center/cover; border:2px solid #303544; flex-shrink:0; }
 .name{ font-weight:700; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* Wallet area (右上) */
-.wallet-area{ display:flex; align-items:center; gap:8px; position:relative; }
-
-/* Pre-connect button */
-.wallet-btn{
+/* Wallet area (top-right) */
+.wallet-wrap{ display:flex; align-items:center; gap:8px; position:relative; }
+.connect-btn{
   display:inline-flex; align-items:center; gap:8px; border:0; cursor:pointer;
   padding:10px 14px; border-radius:14px;
-  background:linear-gradient(90deg,#2b3345,#3b4257);
-  color:#cbd6ee; font-weight:900;
+  background:linear-gradient(90deg,var(--accent-blue-start),var(--accent-blue-end));
+  color:#fff; font-weight:900; box-shadow:0 8px 22px rgba(32,120,255,.25);
 }
-.wallet-caret{ width:14px; height:14px; opacity:.9; }
+.balance-pill{
+  display:none; align-items:center; gap:10px; padding:8px 12px; border-radius:14px;
+  background:#1a2130; border:1px solid #2a3347; box-shadow:0 8px 22px rgba(0,0,0,.25);
+}
+.balance-pill.show{ display:inline-flex; }
+.ton-badge{ width:22px; height:22px; border-radius:50%; display:grid; place-items:center; background:#0f1a27; border:1px solid #203049; }
+.ton-badge svg{ width:16px; height:16px; color:var(--ton); }
+.balance-val{ font-weight:900; letter-spacing:.2px; min-width:56px; text-align:right; }
+.addr-short{ font-size:12px; color:#cfe0ff; font-weight:800; opacity:.9; }
+.plus-btn{
+  width:26px; height:26px; display:grid; place-items:center; border-radius:10px; background:#2a3347; border:1px solid #39445b; cursor:pointer;
+  font-weight:900; font-size:18px; line-height:1; color:#dfe7ff;
+}
+.plus-btn:active{ transform:translateY(1px); }
 .wallet-menu{
-  position:absolute; right:0; top:50px; z-index:50; display:none;
-  background:#121622; border:1px solid #252b3d; border-radius:12px; padding:6px; min-width:160px;
+  position:absolute; right:0; top:50px; z-index:60; display:none;
+  background:#121622; border:1px solid #252b3d; border-radius:12px; padding:6px; min-width:200px;
   box-shadow:0 10px 30px rgba(0,0,0,.4);
 }
 .wallet-menu.open{ display:block; }
+.wallet-menu .menu-row{ padding:8px 10px; font-size:12px; color:#9fb0cc; border-bottom:1px dashed #26304a; }
 .wallet-menu button{
-  width:100%; background:transparent; border:0; color:#eaeefc; text-align:left; padding:10px 12px; border-radius:10px; font-weight:700; cursor:pointer;
+  width:100%; background:transparent; border:0; color:#eaeefc; text-align:left; padding:10px 12px; border-radius:10px; font-weight:800; cursor:pointer;
 }
 .wallet-menu button:hover{ background:#1a2030; }
 
-/* After connect: balance pill */
-.balance-pill{
-  display:none; align-items:center; gap:10px;
-  background:linear-gradient(90deg,var(--primary-start),var(--primary-end));
-  padding:10px 12px; border-radius:14px; font-weight:900; color:#fff; box-shadow:0 10px 28px rgba(60,140,255,.25);
-}
-.balance-pill .ton-ico{ width:20px; height:20px; }
-.balance-pill .amount{ font-size:16px; }
-.balance-pill .plus{
-  margin-left:6px; width:28px; height:28px; border-radius:10px; display:grid; place-items:center; cursor:pointer;
-  background:rgba(255,255,255,.15);
-  border:1px solid rgba(255,255,255,.25);
-}
-
 /* Banner */
-.banner{ margin:12px 14px; padding:13px 12px; border-radius:14px; background:linear-gradient(90deg,var(--primary-start),var(--primary-end)); display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
+.banner{ margin:12px 14px; padding:13px 12px; border-radius:14px; background:linear-gradient(90deg,#3abefc,#6aa8ff); display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
 .banner .title{ font-weight:800; font-size:15px; margin:0 8px; }
 .banner .btn{ background:#fff; color:#09b5ff; font-weight:700; padding:6px 10px; border-radius:12px; text-decoration:none; font-size:13px; display:inline-flex; align-items:center; gap:8px; }
 
-/* Toggle */
+/* Toggle sold */
 .toggle{ margin:10px 14px 0; padding:12px 14px; background:var(--bg-soft); border:1px solid #222838; border-radius:16px; display:flex; align-items:center; gap:12px; }
 .toggle input{ appearance:none; width:22px; height:22px; border-radius:6px; border:2px solid #556079; display:grid; place-items:center; background:#0f1116; }
 .toggle input:checked{ background:#1f283b; border-color:#6aa8ff; }
 .toggle input:checked::after{ content:"✓"; color:#a8c9ff; font-size:14px; line-height:1; }
 .toggle label{ color:var(--text); font-weight:600; user-select:none; }
 
-/* Grid (market) */
+/* Grid */
 .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:14px; justify-items:center; align-items:start; }
+
+/* Market card */
 .card{
   position:relative; overflow:hidden; border-radius:16px;
   background: radial-gradient(120% 120% at 0% 0%, #20263a 0%, #1a1f2d 40%, #161b28 100%);
@@ -111,89 +118,72 @@ body{
 @media (max-width:420px){ .card{ height:200px; } }
 .card:active{ transform:translateY(1px); }
 .card .media{ position:absolute; left:0; right:0; top:0; height:calc(100% - var(--card-footer-h)); display:flex; align-items:center; justify-content:center; padding:14px; }
-.media canvas,.media svg,.media img,.media div{ max-width:100%; max-height:100%; }
+.media canvas, .media svg, .media img, .media div{ max-width:100%; max-height:100%; }
 .card .footer{ height:var(--card-footer-h); display:flex; align-items:center; justify-content:center; padding:10px 14px; background:linear-gradient(180deg, rgba(11,13,18,.35), rgba(11,13,18,.55)); border-top:1px solid rgba(255,255,255,.03); backdrop-filter:blur(4px); }
 .card .footer .price{ display:inline-flex; align-items:center; gap:8px; background:linear-gradient(180deg, rgba(255,210,75,.14), rgba(255,195,45,.14)); padding:6px 13px; border-radius:16px; color:#51ff00d2; font-weight:700; font-size:15px; box-shadow:0 6px 16px rgba(0,0,0,.22); }
 .price-icon{ width:16px; height:16px; object-fit:contain; border-radius:3px; }
 
-/* Ribbons */
+/* Ribbon */
 .ribbon{ position:absolute; top:10px; right:-22px; width:120px; height:26px; display:flex; align-items:center; justify-content:center; transform:rotate(35deg); background:#ff4d4f; color:#fff; font-weight:700; font-size:12px; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,.25); pointer-events:none; line-height:1; padding:0 8px; white-space:nowrap; }
-.ribbon.sold{ background:linear-gradient(180deg,#ff8a95,#e64655); }
 .ribbon.stock{ background:linear-gradient(90deg,#66c2ff,#3aa6ff); }
 
-/* Tabbar */
+/* Bottom tabbar */
 .tabbar{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:flex; justify-content:center; align-items:center; padding:8px 10px; background:linear-gradient(0deg, rgba(15,17,22,1), rgba(15,17,22,.96)); border-top:1px solid rgba(255,255,255,.03); }
 .tabs{ width:min(560px,100%); display:flex; gap:12px; justify-content:center; }
-.tab{ width:var(--tab-size); height:var(--tab-size); border-radius:12px; background:#111523; border:1px solid #252b3d; display:grid; place-items:center; cursor:pointer; box-shadow:0 8px 18px rgba(0,0,0,.25); transition:transform .08s; overflow:hidden; }
+.tab{ width:var(--tab-size); height:var(--tab-size); border-radius:12px; background:#111523; border:1px solid #252b3d; display:grid; place-items:center; cursor:pointer; box-shadow:0 8px 18px rgba(0,0,0,.25); transition:transform .12s, opacity .18s; overflow:hidden; }
 .tab img{ width:20px; height:20px; object-fit:contain; display:block; }
 .tab.active{ outline:2px solid #3f69ff55; transform:translateY(-2px); }
+.tab.disabled{ opacity:.45; filter:saturate(.2); cursor:not-allowed; }
 
 /* Overlays */
-.overlay{ position:fixed; inset:0; z-index:2000; display:none; align-items:center; justify-content:center; background:rgba(6,8,10,.96); backdrop-filter:blur(6px); }
-.overlay.open{ display:flex; }
+.overlay,.purchase-overlay{ position:fixed; inset:0; z-index:2000; display:none; align-items:center; justify-content:center; background:rgba(6,8,10,.95); backdrop-filter:blur(6px); }
+.overlay.open,.purchase-overlay.open{ display:flex; }
 
-/* Wallet modal */
-.wallet-modal{
-  width:100%; max-width:560px; border-radius:16px; padding:16px;
-  background:linear-gradient(180deg,#10131b,#0c0f16); border:1px solid #202638; box-shadow:0 30px 80px rgba(0,0,0,.6);
-}
-.wm-header{ display:flex; align-items:center; justify-content:space-between; }
-.wm-title{ font-weight:900; font-size:18px; }
-.wm-close{ background:transparent; border:0; color:#b7c1d6; font-weight:800; font-size:18px; cursor:pointer; }
-.wm-balance{
-  margin-top:12px; display:flex; align-items:center; gap:10px;
-  background:linear-gradient(90deg,#1a2131,#121826); padding:12px; border-radius:12px; border:1px solid #20283b;
-}
-.wm-row{ margin-top:12px; display:flex; gap:8px; }
-.wm-tabs{ display:flex; gap:8px; }
-.wm-tab{ padding:10px 12px; border-radius:10px; background:#141a28; border:1px solid #223046; color:#cfe0ff; font-weight:800; cursor:pointer; }
-.wm-tab.active{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; border-color:transparent; }
-.wm-body{ margin-top:12px; background:#0f141f; border:1px solid #20283b; border-radius:12px; padding:12px; }
-
-/* Deposit view */
-.copy-line{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.addr-badge{ background:#141a26; border:1px solid #24324a; padding:8px 10px; border-radius:10px; font-weight:700; }
-.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 12px; border-radius:10px; border:1px solid #223046; background:#141a28; color:#dbe7ff; font-weight:800; cursor:pointer; text-decoration:none; }
-.btn.primary{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; border-color:transparent; }
-.qr{ margin-top:10px; display:grid; place-items:center; }
-.qr canvas{ background:#fff; border-radius:10px; padding:6px; }
-
-/* Withdraw view */
-.form-row{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
-.input{ width:100%; padding:12px; border-radius:10px; border:1px solid #293349; background:#0f131c; color:#fff; font-weight:700; }
-.hint{ color:#8ea3c2; font-size:12px; }
-
-/* History */
-.tx-list{ display:flex; flex-direction:column; gap:8px; }
-.tx-item{ display:flex; align-items:center; justify-content:space-between; background:#0f141f; border:1px solid #20283b; border-radius:10px; padding:10px; }
-.tx-item .left{ display:flex; flex-direction:column; gap:2px; }
-.tx-item .right{ font-weight:900; }
-.badge-in { color:#4dff9a; }
-.badge-out{ color:#ff7b7b; }
-
-/* Item modal / purchase / success (сокращено, как раньше) */
+/* Item modal (full-screen) */
 .modal-card{ width:100%; height:100%; max-height:100vh; background:linear-gradient(180deg,#0f1116,#0b0d10); border-radius:0; display:flex; flex-direction:column; overflow:hidden; padding-bottom:16px; }
 .modal-top{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.03); }
 .modal-title{ font-weight:800; font-size:20px; }
-.modal-close{ background:transparent; border:0; color:#b7c1d6; font-weight:700; cursor:pointer; font-size:16px; }
+.modal-close{ background:transparent; border:0; color:var(--muted); font-weight:700; cursor:pointer; font-size:16px; }
 .modal-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:8px; overflow:auto; }
 .modal-media-wrap{ width:95%; max-width:520px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:14px; background:linear-gradient(180deg, rgba(20,22,28,.45), rgba(8,9,12,.35)); border:1px solid rgba(255,255,255,.03); box-shadow:0 20px 60px rgba(0,0,0,.6); overflow:hidden; }
 .modal-media{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:8px; }
-.modal-bottom{ padding:18px 16px; display:flex; flex-direction:column; gap:8px; }
+.modal-bottom{ padding:18px 16px; display:flex; flex-direction:column; gap:10px; }
 .price-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .price-pill{ display:inline-flex; align-items:center; gap:10px; background:linear-gradient(180deg, rgba(255,210,75,.14), rgba(255,195,45,.14)); color:#51ff00d2; padding:10px 14px; border-radius:16px; font-weight:650; font-size:17px; box-shadow:0 8px 20px rgba(0,0,0,.35); }
+
+/* Payment method slider */
+.pay-switch{
+  display:flex; align-items:center; gap:10px; background:#131a28; border:1px solid #2a3347; border-radius:12px; padding:6px;
+  width:100%; max-width:320px;
+}
+.pay-opt{ flex:1; text-align:center; padding:10px 12px; border-radius:10px; font-weight:800; cursor:pointer; color:#cfe0ff; }
+.pay-opt.active{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; }
+.pay-note{ font-size:12px; color:#9fb0cc; }
+
 .modal-actions{ display:flex; gap:12px; flex-direction:column; }
 .btn-ghost{ background:rgba(255,255,255,.06); color:#fff; padding:14px; border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,.03); font-weight:800; text-decoration:none; }
 .btn-primary{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; text-align:center; font-weight:900; text-decoration:none; }
 
-/* Tab 3 (inventory) */
-.tab3-wrapper{ padding:16px; display:none; flex-direction:column; align-items:center; gap:12px; }
+/* SUCCESS overlay */
+.success-overlay{ position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; background:rgba(8,10,12,.96); backdrop-filter:blur(6px); }
+.success-overlay.open{ display:flex; }
+.success-card{ width:100%; max-width:720px; height:100%; max-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:24px; }
+.success-inner{ margin-top:36px; width:min(520px,95%); background:linear-gradient(180deg, rgba(20,22,28,.55), rgba(10,11,13,.35)); border-radius:16px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px; box-shadow:0 30px 80px rgba(0,0,0,.6); }
+.success-media{ width:70%; max-width:420px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; border-radius:12px; background:linear-gradient(180deg, rgba(5,7,9,.2), rgba(8,9,10,.12)); border:1px solid rgba(255,255,255,.03); overflow:hidden; }
+.success-title{ font-size:22px; font-weight:900; margin-top:6px; text-align:center; }
+.success-sub{ color:var(--muted); font-size:13px; text-align:center; margin-bottom:6px; }
+.success-close-full{ position:absolute; bottom:18px; left:50%; transform:translateX(-50%); width:calc(100% - 36px); max-width:720px; background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; font-weight:900; text-align:center; cursor:pointer; box-shadow:0 12px 30px rgba(20,80,160,.18); }
+
+/* Tab 3 (profile + purchased) */
+.tab3-wrapper{ padding:16px; display:none; flex-direction:column; align-items:center; gap:12px; opacity:0; transform:translateY(6px); }
 .tab3-wrapper.open{ display:flex; }
+.tab3-wrapper.fadein{ opacity:1; transform:none; transition:opacity .2s ease, transform .2s ease; }
 .tab3-profile{ display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:6px; }
 .tab3-profile .big-avatar{ width:84px; height:84px; border-radius:50%; background:#222 center/cover; border:3px solid #303544; }
 .tab3-profile .profile-name{ font-weight:800; font-size:18px; }
 .separator{ width:90%; height:1px; background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); margin:4px 0 8px; border-radius:2px; }
 
+/* Purchased cards (как в маркете, но меньше) */
 .purchased-grid{ width:100%; display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:0 10px 30px; box-sizing:border-box; }
 .purchased-card{
   position:relative; overflow:hidden; border-radius:14px;
@@ -204,8 +194,30 @@ body{
 .purchased-card .media{ position:absolute; left:0; right:0; top:0; height:calc(100% - 44px); display:flex; align-items:center; justify-content:center; padding:10px; }
 .purchased-card .footer{ height:44px; display:flex; align-items:center; justify-content:center; width:100%; background:transparent; border-top:1px solid rgba(255,255,255,.02); }
 
-.hidden{ display:none!important; }
+/* Wallet bottom-sheet */
+.wallet-overlay{ position:fixed; inset:0; z-index:3000; display:none; align-items:flex-end; justify-content:center; background:rgba(8,10,12,.6); backdrop-filter:blur(4px); }
+.wallet-overlay.open{ display:flex; }
+.wallet-modal{ width:100%; max-width:560px; background:linear-gradient(180deg,#0e1219,#0b0f16); border-top-left-radius:18px; border-top-right-radius:18px; border:1px solid #232a3b; padding:14px 14px 18px; box-shadow: 0 -16px 40px rgba(0,0,0,.45); }
+.wallet-header{ display:flex; align-items:center; justify-content:space-between; padding:6px 4px 10px; }
+.wallet-title{ font-weight:900; font-size:20px; }
+.wallet-close{ background:transparent; border:0; color:#b8c2d9; font-size:22px; cursor:pointer; }
+.wallet-tabs{ display:flex; gap:8px; padding:6px 2px 12px; }
+.wallet-tab{ flex:1; text-align:center; padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:800; background:#141a26; border:1px solid #242c3e; color:#cfe0ff; }
+.wallet-tab.active{ background:linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; border-color:transparent; }
+.tab-panel{ display:none; }
+.tab-panel.active{ display:block; }
+.form-row{ display:flex; flex-direction:column; gap:6px; padding:8px 2px; }
+.input-ton{ width:100%; padding:14px 14px; border-radius:12px; border:1px solid #273149; outline:none; background:#0f1420; color:#fff; font-weight:800; font-size:18px; }
+.primary-btn{ width:100%; margin-top:8px; padding:14px; border-radius:12px; border:0; cursor:pointer; font-weight:900; color:#fff; background:linear-gradient(90deg,#2fa6ff,#1a73ff); }
+.small{ font-size:12px; color:#93a2bf; }
+
+/* Helpers */
+.hidden{ display:none !important; }
 .lottie-placeholder{ color:var(--muted); font-size:13px; text-align:center; padding:8px }
+@media (max-width:420px){
+  .purchased-card{ height:180px; max-width:48%; }
+  .success-media{ width:88%; }
+}
 </style>
 </head>
 <body>
@@ -217,27 +229,27 @@ body{
         <div id="userName" class="name">User</div>
       </div>
 
-      <!-- RIGHT: wallet area -->
-      <div class="wallet-area">
-        <!-- до подключения -->
-        <button id="walletBtn" class="wallet-btn" aria-label="Connect TON wallet">
-          <span id="walletBtnText">Connect TON</span>
-          <svg class="wallet-caret" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <!-- Wallet area -->
+      <div class="wallet-wrap">
+        <!-- connect -->
+        <button id="connectBtn" class="connect-btn" aria-label="Connect TON">
+          <span>Connect TON</span>
         </button>
-        <div id="walletMenu" class="wallet-menu" role="menu" aria-hidden="true">
-          <button id="disconnectBtn">Disconnect</button>
-        </div>
 
-        <!-- после подключения -->
-        <div id="balancePill" class="balance-pill" aria-live="polite">
-          <!-- TON icon -->
-          <svg class="ton-ico" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-            <path d="M20 2C10.058 2 2 10.058 2 20s8.058 18 18 18 18-8.058 18-18S29.942 2 20 2Zm0 5.2 9.6 15.7h-6.7L20 14.7l-2.9 8.2h-6.7L20 7.2Z" fill="white" opacity=".9"/>
-          </svg>
-          <span class="amount"><span id="tonAmount">0</span> TON</span>
-          <div id="openWalletModal" class="plus" title="Пополнить / вывести / история">+</div>
+        <!-- balance pill (internal app balance) -->
+        <div id="balancePill" class="balance-pill" title="Внутренний баланс">
+          <span class="ton-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Zm3.8-14.7H8.2c-.4 0-.63.45-.39.78l3.6 4.86c.2.27.58.27.78 0l3.6-4.86c.24-.33.01-.78-.39-.78ZM12.4 17.2V12h-1.8v5.2c0 .44.36.8.8.8h.2c.44 0 .8-.36.8-.8Z" fill="currentColor"/></svg>
+          </span>
+          <span id="balanceValue" class="balance-val">0.00</span>
+          <span id="addrShort" class="addr-short"></span>
+          <div id="plusBtn" class="plus-btn" role="button" aria-label="Пополнить">+</div>
+
+          <!-- dropdown -->
+          <div id="walletMenu" class="wallet-menu" role="menu" aria-hidden="true">
+            <div class="menu-row">Подключён: <span id="menuAddr" style="font-weight:900"></span></div>
+            <button id="disconnectBtn">Disconnect</button>
+          </div>
         </div>
       </div>
     </div>
@@ -256,8 +268,11 @@ body{
 
     <!-- Grid (market) -->
     <div class="grid" id="cardsGrid" aria-live="polite">
-      <article class="card" id="card1" data-sold="false" role="article" aria-label="Cute sticker — 1 из 100"
-               data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4">
+      <!-- ВАЖНО: добавлен data-ton-price -->
+      <article class="card" id="card1" data-sold="false"
+        data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4"
+        data-ton-price="0.10"
+        role="article" aria-label="Cute sticker — 1 из 100">
         <div class="ribbon stock" aria-hidden="true">1 из 100</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/sticker.json">
           <div class="lottie-placeholder">Lottie animation 1</div>
@@ -267,8 +282,10 @@ body{
         </div>
       </article>
 
-      <article class="card" id="card2" data-sold="false" role="article" aria-label="Dog sticker — 1 из 50"
-               data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4">
+      <article class="card" id="card2" data-sold="false"
+        data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4"
+        data-ton-price="0.25"
+        role="article" aria-label="Dog sticker — 1 из 50">
         <div class="ribbon stock" aria-hidden="true">1 из 50</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/002_DOG%20(1).json">
           <div class="lottie-placeholder">Lottie animation 2</div>
@@ -286,7 +303,7 @@ body{
       <div class="tab active" role="tab" aria-selected="true" id="tab1" title="Маркет">
         <img src="stars-DBKMczxe.png" alt="tab1 icon">
       </div>
-      <div class="tab" role="tab" aria-selected="false" id="tab2" title="Tab 2">
+      <div class="tab disabled" role="tab" aria-selected="false" aria-disabled="true" id="tab2" title="Disabled">
         <img src="https://dummyimage.com/64x64/2b3345/ffffff&text=2" alt="tab2 icon">
       </div>
       <div class="tab" role="tab" aria-selected="false" id="tab3" title="Инвентарь">
@@ -305,7 +322,7 @@ body{
     <div id="purchasedGrid" class="purchased-grid" aria-live="polite"></div>
   </div>
 
-  <!-- ITEM MODAL (shop) -->
+  <!-- ITEM MODAL -->
   <div id="itemOverlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="modal-card" role="document" aria-label="Детали подарка">
       <div class="modal-top">
@@ -326,363 +343,264 @@ body{
           <div style="color:#9aa3b2;font-weight:600;margin-left:8px" id="modalShort">Краткое описание</div>
         </div>
 
+        <!-- Ползунок (переключатель оплаты) -->
+        <div class="pay-switch" id="paySwitch">
+          <div class="pay-opt active" data-method="ton">TON баланс</div>
+          <div class="pay-opt" data-method="stars">TG Stars</div>
+        </div>
+        <div id="payNote" class="pay-note">Оплата с внутреннего баланса мини-аппа.</div>
+
         <div class="modal-actions">
-          <a id="modalBuyStars" class="btn-ghost" href="#" target="_blank" rel="noopener noreferrer">Купить звёзды ★</a>
-          <a id="modalBuyGift" class="btn-primary" href="#" target="_blank" rel="noopener noreferrer">Купить подарок — ★ <span id="modalBuyPrice">15</span></a>
-          <div id="modalUpgradeWrap" class="hidden"></div>
+          <!-- звёзды — как раньше -->
+          <a id="modalBuyStars" class="btn-ghost" href="#" target="_blank" rel="noopener noreferrer">Купить через Stars</a>
+          <!-- купить (тон или звёзды — меняется по переключателю) -->
+          <a id="modalBuyGift" class="btn-primary" href="#" target="_blank" rel="noopener noreferrer">Купить за TON</a>
+
+          <!-- «Улучшить» полностью убран для купленных -->
+          <div id="modalUpgradeWrap" class="hidden"><a id="modalUpgrade" class="hidden">Улучшить</a></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- WALLET MODAL (balance / deposit / withdraw / history) -->
-  <div id="walletOverlay" class="overlay" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="wallet-modal" role="document" aria-label="Кошелёк TON">
-      <div class="wm-header">
-        <div class="wm-title">Кошелёк TON</div>
-        <button id="wmClose" class="wm-close" aria-label="Закрыть">✕</button>
+  <!-- PURCHASE (legacy overlay, если потребуется визуал) -->
+  <div id="purchaseOverlay" class="purchase-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="purchase-card" role="document" aria-label="Куплено">
+      <div id="purchasedMedia" class="purchase-media"></div>
+      <div id="purchaseCloseBtn" class="btn-primary" role="button" tabindex="0" style="max-width:720px">Закрыть</div>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="successOverlay" class="success-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="success-card" role="document" aria-label="Подарок куплен">
+      <div class="success-inner">
+        <div id="successMedia" class="success-media" aria-hidden="true"></div>
+        <div class="success-title">Подарок куплен!</div>
+        <div class="success-sub">Ваш подарок находится в профиле</div>
+      </div>
+      <div id="successCloseBtn" class="success-close-full" role="button" tabindex="0">Закрыть</div>
+    </div>
+  </div>
+
+  <!-- WALLET (Deposit + History only) -->
+  <div id="walletOverlay" class="wallet-overlay" aria-hidden="true">
+    <div class="wallet-modal" role="dialog" aria-modal="true">
+      <div class="wallet-header">
+        <div class="wallet-title">Кошелёк</div>
+        <button id="walletClose" class="wallet-close" aria-label="Закрыть">×</button>
       </div>
 
-      <div class="wm-balance">
-        <strong>Баланс:</strong> <span id="wmAmount">0</span> TON
+      <div class="wallet-tabs">
+        <div id="tabDeposit" class="wallet-tab active">Пополнить</div>
+        <div id="tabHistory" class="wallet-tab">История</div>
       </div>
 
-      <div class="wm-row">
-        <div class="wm-tabs">
-          <button class="wm-tab active" data-tab="deposit">Пополнить</button>
-          <button class="wm-tab" data-tab="withdraw">Вывести</button>
-          <button class="wm-tab" data-tab="history">История</button>
+      <div id="panelDeposit" class="tab-panel active">
+        <div class="small" id="connectedShort">Подключённый: —</div>
+        <div class="form-row">
+          <input id="amountInput" class="input-ton" type="number" step="0.000000001" min="0" placeholder="Сумма в TON" />
+          <button id="depositBtn" class="primary-btn">Пополнить</button>
+          <div class="small">Подтверди транзакцию в кошельке. Средства поступят на внутренний баланс.</div>
         </div>
       </div>
 
-      <div id="wmBody" class="wm-body">
-        <!-- вкладки наполняются скриптом -->
+      <div id="panelHistory" class="tab-panel">
+        <div class="small">История внутренняя (пополнения и покупки)</div>
+        <div id="txList" class="tx-list"></div>
       </div>
     </div>
   </div>
 
 <script>
-/* ============================
-   CONFIG: вставь свой TonCenter API key
-============================ */
-const TONCENTER_API_KEY = 'PASTE_YOUR_MAINNET_TONCENTER_API_KEY_HERE'; // <--- ВСТАВЬ СЮДА ключ Mainnet
-const TONCENTER_URL = 'https://toncenter.com/api/v2'; // Mainnet
-// Манифест TON Connect (замени на свой)
-const MANIFEST_URL = 'https://vocococo.github.io/ton-connect/tonconnect-manifest.json';
+/* =========================
+   Константы проекта
+========================= */
+const MANIFEST_URL  = 'https://vocococo.github.io/ton-connect/tonconnect-manifest.json';
+const MERCHANT_ADDR = 'UQDyKNQLN_PqZgd_NXnVe80cezX9M5mCL0izNW3w2iQAXkp0'; // твой кошелёк получателя
+const LS_BALANCE    = 'tg_app_balance_ton_v1';
+const LS_HISTORY    = 'tg_app_history_v1';
+const LS_PURCHASES  = 'turbo_gifts_purchased_v1';
 
-/* ============================
-   TON Connect UI
-============================ */
-const walletBtn     = document.getElementById('walletBtn');
-const walletBtnText = document.getElementById('walletBtnText');
-const walletMenu    = document.getElementById('walletMenu');
-const disconnectBtn = document.getElementById('disconnectBtn');
-const balancePill   = document.getElementById('balancePill');
-const tonAmountEl   = document.getElementById('tonAmount');
-const openWalletModalBtn = document.getElementById('openWalletModal');
+/* =========================
+   Утилиты
+========================= */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const fmt = n => (Number(n).toFixed(Number(n)<1?4:2));
+const toNano = ton => Math.round(Number(ton)*1e9).toString();
+const truncateAddr = a => a ? (a.slice(0,4)+'…'+a.slice(-4)) : '';
+
+function getBalance(){
+  const v = localStorage.getItem(LS_BALANCE);
+  return v ? Number(v) : 0;
+}
+function setBalance(val){
+  localStorage.setItem(LS_BALANCE, String(val));
+  $('#balanceValue').textContent = fmt(val);
+}
+function addBalance(delta){
+  const cur = getBalance();
+  setBalance(cur + Number(delta));
+}
+function pushHistory(entry){
+  const arr = JSON.parse(localStorage.getItem(LS_HISTORY)||'[]');
+  arr.unshift({ ...entry, ts: Date.now() });
+  localStorage.setItem(LS_HISTORY, JSON.stringify(arr));
+}
+function readHistory(){
+  return JSON.parse(localStorage.getItem(LS_HISTORY)||'[]');
+}
+
+/* =========================
+   TON Connect UI init
+========================= */
+const connectBtn   = $('#connectBtn');
+const balancePill  = $('#balancePill');
+const addrShortEl  = $('#addrShort');
+const walletMenu   = $('#walletMenu');
+const menuAddr     = $('#menuAddr');
+const disconnectBtn= $('#disconnectBtn');
+const plusBtn      = $('#plusBtn');
 
 const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: MANIFEST_URL,
   actionsConfiguration: { twaReturnUrl: 'https://t.me' }
 });
 
-let REFRESH_TIMER = null;
-
-function nt2ton(nt){ // nanotons -> TON
-  return (Number(nt) / 1e9);
-}
-function ton2nt(ton){ // TON -> nanotons (string)
-  return Math.round(Number(ton) * 1e9).toString();
-}
-function shortAddr(addr){ return addr ? (addr.slice(0,4)+'…'+addr.slice(-4)) : ''; }
-
-function setConnectedUI(address){
-  walletBtn.style.display = 'none';
-  balancePill.style.display = 'inline-flex';
-  walletMenu.classList.remove('open');
-  walletMenu.setAttribute('aria-hidden','true');
-  // сразу баланс
-  updateBalance(address);
-  startAutoRefresh(address);
-}
-function setDisconnectedUI(){
-  stopAutoRefresh();
-  walletBtn.style.display = 'inline-flex';
-  balancePill.style.display = 'none';
-  walletBtnText.textContent = 'Connect TON';
-}
-
-/* open TON Connect modal / or menu if connected */
-walletBtn.addEventListener('click', async ()=>{
-  if(tonConnectUI.connected){
-    walletMenu.classList.toggle('open');
-    walletMenu.setAttribute('aria-hidden', walletMenu.classList.contains('open') ? 'false' : 'true');
-    document.addEventListener('click', function onDoc(e){
-      if(!walletMenu.contains(e.target) && e.target !== walletBtn){
-        walletMenu.classList.remove('open'); walletMenu.setAttribute('aria-hidden','true');
-        document.removeEventListener('click', onDoc);
-      }
-    });
-    return;
+function renderWalletUI(){
+  const addr = tonConnectUI.account?.address;
+  if(addr){
+    connectBtn.style.display = 'none';
+    balancePill.classList.add('show');
+    addrShortEl.textContent = truncateAddr(addr);
+    menuAddr.textContent = truncateAddr(addr);
+    $('#connectedShort').textContent = 'Подключённый: ' + truncateAddr(addr);
+  }else{
+    balancePill.classList.remove('show');
+    connectBtn.style.display = 'inline-flex';
+    addrShortEl.textContent = '';
   }
-  try{ await tonConnectUI.openModal(); }catch(e){ console.warn(e); }
+  // Всегда обновляем отображение внутреннего баланса
+  $('#balanceValue').textContent = fmt(getBalance());
+}
+tonConnectUI.onStatusChange(renderWalletUI);
+renderWalletUI();
+
+/* Меню (disconnect) */
+balancePill.addEventListener('click', (e)=>{
+  // клик по «...», показываем меню (кроме клика по +)
+  if(e.target === plusBtn) return;
+  walletMenu.classList.toggle('open');
+  walletMenu.setAttribute('aria-hidden', walletMenu.classList.contains('open') ? 'false':'true');
+  document.addEventListener('click', function onDoc(ev){
+    if(!walletMenu.contains(ev.target) && !balancePill.contains(ev.target)){
+      walletMenu.classList.remove('open');
+      walletMenu.setAttribute('aria-hidden','true');
+      document.removeEventListener('click', onDoc);
+    }
+  });
 });
 disconnectBtn.addEventListener('click', async ()=>{
   try{ await tonConnectUI.disconnect(); }catch(e){}
-  setDisconnectedUI();
-});
-tonConnectUI.onStatusChange((info)=>{
-  const addr = tonConnectUI.account?.address;
-  if(addr){ setConnectedUI(addr); }
-  else { setDisconnectedUI(); }
+  walletMenu.classList.remove('open');
+  renderWalletUI();
 });
 
-// при загрузке
-if(tonConnectUI.connected && tonConnectUI.account?.address){
-  setConnectedUI(tonConnectUI.account.address);
-}
+/* Подключение кошелька */
+connectBtn.addEventListener('click', async ()=>{
+  try{ await tonConnectUI.openModal(); }catch(e){ console.warn(e); }
+});
 
-/* ============================
-   TonCenter API helpers
-============================ */
-// get balance
-async function fetchBalance(address){
-  const url = `${TONCENTER_URL}/getAddressBalance?address=${encodeURIComponent(address)}&api_key=${encodeURIComponent(TONCENTER_API_KEY)}`;
-  const r = await fetch(url);
-  if(!r.ok) throw new Error('TonCenter balance error');
-  const j = await r.json();
-  if(!j.ok) throw new Error('TonCenter balance not ok');
-  return nt2ton(j.result);
-}
-async function fetchHistory(address, limit=15){
-  const url = `${TONCENTER_URL}/getTransactions?address=${encodeURIComponent(address)}&limit=${limit}&api_key=${encodeURIComponent(TONCENTER_API_KEY)}`;
-  const r = await fetch(url);
-  if(!r.ok) throw new Error('TonCenter history error');
-  const j = await r.json();
-  if(!j.ok) throw new Error('TonCenter history not ok');
-  return j.result || [];
-}
+/* Пополнить (открыть оверлей) */
+plusBtn.addEventListener('click', ()=>{
+  if(!tonConnectUI.connected){ tonConnectUI.openModal().catch(()=>{}); return; }
+  openWalletOverlay();
+});
 
-async function updateBalance(address){
-  try{
-    const bal = await fetchBalance(address);
-    tonAmountEl.textContent = bal.toFixed(4).replace(/\.?0+$/,'');
-    document.getElementById('wmAmount').textContent = tonAmountEl.textContent;
-  }catch(e){
-    console.warn('Balance error', e);
-  }
-}
-function startAutoRefresh(address){
-  stopAutoRefresh();
-  REFRESH_TIMER = setInterval(()=> updateBalance(address), 20000);
-}
-function stopAutoRefresh(){
-  if(REFRESH_TIMER){ clearInterval(REFRESH_TIMER); REFRESH_TIMER = null; }
-}
+/* =========================
+   Wallet Overlay (Deposit + History internal)
+========================= */
+const walletOverlay = $('#walletOverlay');
+const walletClose   = $('#walletClose');
+const tabDeposit    = $('#tabDeposit');
+const tabHistory    = $('#tabHistory');
+const panelDeposit  = $('#panelDeposit');
+const panelHistory  = $('#panelHistory');
+const amountInput   = $('#amountInput');
+const depositBtn    = $('#depositBtn');
+const txList        = $('#txList');
 
-/* ============================
-   Wallet Modal (Deposit / Withdraw / History)
-============================ */
-const walletOverlay = document.getElementById('walletOverlay');
-const wmClose = document.getElementById('wmClose');
-const wmBody = document.getElementById('wmBody');
-
-openWalletModalBtn.addEventListener('click', ()=>{
+function setWalletTab(which='deposit'){
+  [tabDeposit, tabHistory].forEach(t=>t.classList.remove('active'));
+  [panelDeposit, panelHistory].forEach(p=>p.classList.remove('active'));
+  if(which==='deposit'){ tabDeposit.classList.add('active'); panelDeposit.classList.add('active'); }
+  else { tabHistory.classList.add('active'); panelHistory.classList.add('active'); renderInternalHistory(); }
+}
+function openWalletOverlay(which='deposit'){
+  setWalletTab(which);
   walletOverlay.classList.add('open'); walletOverlay.setAttribute('aria-hidden','false');
-  renderWalletTab('deposit');
-});
-wmClose.addEventListener('click', closeWalletModal);
-walletOverlay.addEventListener('click', (e)=>{ if(e.target===walletOverlay) closeWalletModal(); });
-
-function closeWalletModal(){
+}
+function closeWalletOverlay(){
   walletOverlay.classList.remove('open'); walletOverlay.setAttribute('aria-hidden','true');
 }
-document.querySelectorAll('.wm-tab').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.wm-tab').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    renderWalletTab(btn.dataset.tab);
-  });
+walletClose.addEventListener('click', closeWalletOverlay);
+walletOverlay.addEventListener('click', (e)=>{ if(e.target===walletOverlay) closeWalletOverlay(); });
+tabDeposit.addEventListener('click', ()=> setWalletTab('deposit'));
+tabHistory.addEventListener('click', ()=> setWalletTab('history'));
+
+/* Реальное пополнение (TON tx -> внутренний баланс) */
+depositBtn.addEventListener('click', async ()=>{
+  if(!tonConnectUI.connected){ await tonConnectUI.openModal(); return; }
+  const amt = Number(amountInput.value);
+  if(!amt || amt<=0){ alert('Укажи сумму в TON'); return; }
+  try{
+    const tx = {
+      validUntil: Math.floor(Date.now()/1000) + 300,
+      messages: [{ address: MERCHANT_ADDR, amount: toNano(amt) }]
+    };
+    await tonConnectUI.sendTransaction(tx); // Confirm in wallet
+    // Считаем успехом: зачисляем на внутренний баланс
+    addBalance(amt);
+    pushHistory({ type:'deposit', amount: amt });
+    amountInput.value='';
+    setWalletTab('history');
+  }catch(e){
+    console.warn('sendTransaction error', e);
+    alert('Операция отменена или ошибка');
+  }
 });
 
-function renderWalletTab(tab){
-  const addr = tonConnectUI.account?.address || '';
-  if(tab==='deposit'){
-    wmBody.innerHTML = `
-      <div class="copy-line">
-        <div class="addr-badge" id="depAddr">${addr || '—'}</div>
-        <button class="btn" id="copyAddrBtn">Скопировать адрес</button>
-        <a class="btn" id="openWalletLink" href="ton://transfer/${addr}" target="_blank" rel="noopener">Открыть кошелёк</a>
-        <a class="btn" href="https://tonkeeper.com/buy" target="_blank" rel="noopener">Купить TON</a>
-      </div>
-      <div class="qr"><canvas id="qrCanvas" width="180" height="180"></canvas></div>
-      <div class="hint">Отправь TON на этот адрес — после подтверждения сети баланс обновится автоматически.</div>
-    `;
-    attachDepositHandlers(addr);
-    drawQR(`ton://transfer/${addr}`);
+/* История внутренняя (рендер) */
+function renderInternalHistory(){
+  const items = readHistory();
+  if(!items.length){
+    txList.innerHTML = '<div class="small">Пока пусто</div>';
+    return;
   }
-  if(tab==='withdraw'){
-    wmBody.innerHTML = `
-      <div class="form-row">
-        <label>Адрес получателя</label>
-        <input id="wTo" class="input" placeholder="например, EQC... или UQ..." />
-      </div>
-      <div class="form-row">
-        <label>Сумма (TON)</label>
-        <input id="wAmount" class="input" placeholder="0.1" inputmode="decimal" />
-      </div>
-      <div class="form-row">
-        <label>Комментарий (необязательно)</label>
-        <input id="wComment" class="input" placeholder="thanks!" />
-      </div>
-      <div class="form-row">
-        <button id="wSend" class="btn primary">Отправить</button>
-        <div class="hint" id="wHint"></div>
-      </div>
-    `;
-    attachWithdrawHandlers();
-  }
-  if(tab==='history'){
-    wmBody.innerHTML = `
-      <div class="hint">Последние транзакции кошелька:</div>
-      <div id="txList" class="tx-list"></div>
-    `;
-    renderHistory(addr);
-  }
-}
-
-function attachDepositHandlers(addr){
-  const copyBtn = document.getElementById('copyAddrBtn');
-  copyBtn?.addEventListener('click', async ()=>{
-    try{
-      await navigator.clipboard.writeText(addr||'');
-      copyBtn.textContent = 'Скопировано ✓';
-      setTimeout(()=> copyBtn.textContent='Скопировать адрес', 1500);
-    }catch(e){}
-  });
-  // open wallet link already set
-}
-
-// Мега-лёгкий QR (без библиотек — квадратики)
-function drawQR(text){
-  // Для простоты: используем бесплатный API charts (минимум зависимостей)
-  // Если оффлайн, можно подключить tiny QR-библиотеку. Здесь сделаем через Image.
-  const url = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(text)}`;
-  const c = document.getElementById('qrCanvas'); if(!c) return;
-  const ctx = c.getContext('2d');
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = ()=>{ ctx.clearRect(0,0,c.width,c.height); ctx.drawImage(img,0,0,180,180); };
-  img.src = url;
-}
-
-function attachWithdrawHandlers(){
-  const wSend = document.getElementById('wSend');
-  const wTo = document.getElementById('wTo');
-  const wAmount = document.getElementById('wAmount');
-  const wComment = document.getElementById('wComment');
-  const wHint = document.getElementById('wHint');
-
-  wSend.addEventListener('click', async ()=>{
-    const to = (wTo.value||'').trim();
-    const amount = (wAmount.value||'').trim();
-    if(!to || !amount){ wHint.textContent = 'Укажи адрес и сумму.'; return; }
-    try{
-      wHint.textContent = 'Ожидаем подтверждение в кошельке...';
-      await tonConnectUI.sendTransaction({
-        validUntil: Math.floor(Date.now()/1000) + 300,
-        messages: [{
-          address: to,
-          amount: ton2nt(amount),
-          payload: wComment.value ? btoa(unescape(encodeURIComponent(wComment.value))) : undefined
-        }]
-      });
-      wHint.textContent = 'Отправлено! Обновляем баланс...';
-      const addr = tonConnectUI.account?.address;
-      if(addr){ await updateBalance(addr); }
-      setTimeout(()=> { wHint.textContent = 'Готово ✅'; }, 800);
-    }catch(e){
-      console.warn('send tx error', e);
-      wHint.textContent = 'Операция отменена или ошибка.';
-    }
+  txList.innerHTML = '';
+  items.forEach(it=>{
+    const d = new Date(it.ts||Date.now());
+    const row = document.createElement('div');
+    row.className='tx-item';
+    const left = document.createElement('div');
+    left.className='left';
+    const title = document.createElement('div');
+    title.textContent = (it.type==='deposit' ? 'Пополнение' : 'Покупка');
+    const date = document.createElement('div');
+    date.className='date'; date.textContent = d.toLocaleString();
+    left.appendChild(title); left.appendChild(date);
+    const right = document.createElement('div');
+    right.className='amount';
+    right.textContent = (it.type==='deposit' ? '+' : '-') + fmt(it.amount) + ' TON';
+    row.appendChild(left); row.appendChild(right);
+    txList.appendChild(row);
   });
 }
 
-async function renderHistory(addr){
-  const list = document.getElementById('txList');
-  list.innerHTML = '<div class="hint">Загрузка...</div>';
-  try{
-    const txs = await fetchHistory(addr, 20);
-    if(!txs.length){ list.innerHTML = '<div class="hint">Нет транзакций</div>'; return; }
-    list.innerHTML = '';
-    txs.forEach(tx=>{
-      // Определим суммарный вход и выход
-      let delta = 0;
-      // in_msg
-      if(tx.in_msg && tx.in_msg.value) delta += Number(tx.in_msg.value);
-      // out_msgs
-      if(Array.isArray(tx.out_msgs)){
-        tx.out_msgs.forEach(m=>{ if(m.value) delta -= Number(m.value); });
-      }
-      const isIn = delta > 0;
-      const ton = Math.abs(nt2ton(delta));
-      const when = new Date((tx.utime||tx.now||Date.now())*1000).toLocaleString();
-      const leftHtml = `
-        <div class="left">
-          <div>${when}</div>
-          <div class="${isIn?'badge-in':'badge-out'}">${isIn?'Входящая':'Исходящая'}</div>
-        </div>`;
-      const rightHtml = `<div class="right">${isIn?'+':'-'}${ton.toFixed(4).replace(/\.?0+$/,'')} TON</div>`;
-      const row = document.createElement('div');
-      row.className = 'tx-item';
-      row.innerHTML = leftHtml + rightHtml;
-      list.appendChild(row);
-    });
-  }catch(e){
-    list.innerHTML = '<div class="hint">Ошибка загрузки истории</div>';
-  }
-}
-
-/* ============================
-   Telegram user (имя/аватар)
-============================ */
-(function initTelegramUser(){
-  try {
-    if(window.Telegram && Telegram.WebApp){
-      Telegram.WebApp.ready();
-      const initDataUnsafe = Telegram.WebApp.initDataUnsafe || {};
-      const user = initDataUnsafe.user || null;
-      const nameEl = document.getElementById('userName');
-      const avatarEl = document.getElementById('avatar');
-      const bigAvatar = document.getElementById('bigAvatar');
-      const bigName = document.getElementById('bigName');
-
-      if(user){
-        const parts = []; if(user.first_name) parts.push(user.first_name); if(user.last_name) parts.push(user.last_name);
-        if(parts.length===0 && user.username) parts.push(user.username);
-        if(parts.length===0) parts.push('User');
-        const displayName = parts.join(' ');
-        nameEl.textContent = displayName; bigName.textContent = displayName;
-
-        if(user.photo_url){
-          avatarEl.style.backgroundImage = `url("${user.photo_url}")`;
-          bigAvatar.style.backgroundImage = `url("${user.photo_url}")`;
-        } else {
-          const initials = parts.map(p=>p[0]||'').join('').slice(0,2).toUpperCase() || 'U';
-          const bg = '#2b3345', fg = '#fff';
-          const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='${bg}' rx='40'/><text x='50%' y='50%' font-family='Arial,sans-serif' font-size='90' fill='${fg}' dominant-baseline='middle' text-anchor='middle'>${initials}</text></svg>`;
-          const url = `data:image/svg+xml;charset=utf8,${encodeURIComponent(svg)}`;
-          avatarEl.style.backgroundImage = `url("${url}")`;
-          bigAvatar.style.backgroundImage = `url("${url}")`;
-        }
-      }
-    }
-  } catch(err){ console.warn('Telegram init error', err); }
-})();
-
-/* ============================
-   Lottie helpers
-============================ */
+/* =========================
+   Market / Inventory / Purchases
+========================= */
 function loadLottieFor(el){
   const url = el.getAttribute('data-lottie-url'); el.innerHTML='';
   if(!url){ el.innerHTML='<div class="lottie-placeholder">Укажите ссылку на Lottie (.json/.tgs)</div>'; return; }
@@ -695,131 +613,304 @@ function loadLottieFor(el){
   if(/\.(svg|png|jpg|jpeg|gif)(\?|$)/i.test(url)){ const img=document.createElement('img'); img.src=url; img.alt='media'; img.style.maxWidth='100%'; img.style.maxHeight='100%'; el.appendChild(img); return; }
   el.innerHTML='<div class="lottie-placeholder">Неподдерживаемый формат</div>';
 }
-document.querySelectorAll('.media.lottie').forEach(loadLottieFor);
+$$('.media.lottie').forEach(loadLottieFor);
 
-/* ============================
-   Shop / Inventory logic (коротко)
-============================ */
-const PURCHASE_KEY='turbo_gifts_purchased_v1';
-function readPurchased(){ try{return JSON.parse(localStorage.getItem(PURCHASE_KEY)||'[]');}catch(e){return[];} }
-function savePurchased(list){ try{ localStorage.setItem(PURCHASE_KEY, JSON.stringify(list)); }catch(e){} }
-function addPurchased(item){ const list=readPurchased(); if(!list.some(x=>x.id===item.id)){ list.unshift(item); savePurchased(list); renderPurchasedGrid(); } }
+/* Persisted purchased */
+function readPurchased(){ try{ return JSON.parse(localStorage.getItem(LS_PURCHASES)||'[]'); }catch(e){ return []; } }
+function savePurchased(list){ try{ localStorage.setItem(LS_PURCHASES, JSON.stringify(list)); }catch(e){} }
+function addPurchased(item){
+  const list = readPurchased();
+  if(!list.some(x=>x.id===item.id)){ list.unshift(item); savePurchased(list); renderPurchasedGrid(); }
+}
+
+/* Render inventory */
 function createPurchasedCardNode(item){
   const a=document.createElement('article'); a.className='purchased-card'; a.setAttribute('data-purchased-id',item.id);
   const media=document.createElement('div'); media.className='media'; media.setAttribute('data-lottie-url', item.lottie||'');
   const footer=document.createElement('div'); footer.className='footer';
-  const priceWrap=document.createElement('div'); priceWrap.className='price'; priceWrap.style.display='inline-flex'; priceWrap.style.alignItems='center'; priceWrap.style.gap='8px'; priceWrap.style.color='#fff'; priceWrap.innerHTML=`<img src="stars-DBKMczxe.png" alt="icon" class="price-icon" style="width:14px;height:14px"><span class="price-value">${item.price}</span>`;
+  const priceWrap=document.createElement('div'); priceWrap.className='price';
+  priceWrap.style.display='inline-flex'; priceWrap.style.alignItems='center'; priceWrap.style.gap='8px'; priceWrap.style.color='#fff';
+  priceWrap.innerHTML=`<img src="stars-DBKMczxe.png" alt="icon" class="price-icon" style="width:14px;height:14px"><span class="price-value">${item.stars||'—'}</span>`;
   footer.appendChild(priceWrap); a.appendChild(media); a.appendChild(footer);
   const inner=document.createElement('div'); inner.style.width='100%'; inner.style.height='100%'; if(item.lottie) inner.setAttribute('data-lottie-url', item.lottie); media.appendChild(inner); loadLottieFor(inner);
-  a.addEventListener('click',()=>{ openItemModalFromPurchased(item,a); });
+  a.addEventListener('click',()=>{ openItemModalFromPurchased(item); });
   return a;
 }
 function renderPurchasedGrid(){
-  const grid=document.getElementById('purchasedGrid'); grid.innerHTML=''; const list=readPurchased();
-  if(!list.length){ grid.innerHTML='<div style="color:#9aa3b2;padding:12px;grid-column:1/-1;text-align:center">Пока нет купленных подарков</div>'; return; }
-  list.forEach(item=> grid.appendChild(createPurchasedCardNode(item)));
+  const grid = $('#purchasedGrid'); grid.innerHTML='';
+  const list = readPurchased();
+  if(!list.length){ grid.innerHTML = '<div style="color:var(--muted); padding:12px; grid-column:1/-1; text-align:center">Пока нет купленных подарков</div>'; return; }
+  list.forEach(it=> grid.appendChild(createPurchasedCardNode(it)));
 }
 
 /* Hide/show sold with GSAP */
-const hideSoldCheckbox=document.getElementById('hideSold');
-function soldCards(){ return Array.from(document.querySelectorAll('[data-sold="true"]')); }
-function hideSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden==='1')return; if(typeof gsap!=='undefined'){ gsap.to(c,{duration:.36,ease:'power2.out',opacity:0,scale:.98,y:-8,onComplete:()=>{c.style.display='none'; c.dataset._hidden='1';}});} else { c.style.display='none'; c.dataset._hidden='1'; } }); }
-function showSoldAnimated(){ soldCards().forEach(c=>{ if(c.dataset._hidden!=='1')return; c.style.display=''; if(typeof gsap!=='undefined'){ gsap.set(c,{opacity:0,scale:.98,y:-8}); gsap.to(c,{duration:.4,ease:'power2.out',opacity:1,scale:1,y:0,onComplete:()=>{c.dataset._hidden='0';}});} else { c.dataset._hidden='0'; } }); }
-hideSoldCheckbox.addEventListener('change', ()=>{ hideSoldCheckbox.checked ? hideSoldAnimated() : showSoldAnimated(); });
-
-/* Item modal shop */
-const itemOverlay=document.getElementById('itemOverlay');
-const modalCloseBtn=document.getElementById('modalCloseBtn');
-const modalTitle=document.getElementById('modalTitle');
-const modalLottie=document.getElementById('modalLottie');
-const modalPriceValue=document.getElementById('modalPriceValue');
-const modalBuyStars=document.getElementById('modalBuyStars');
-const modalBuyGift=document.getElementById('modalBuyGift');
-const modalBuyPrice=document.getElementById('modalBuyPrice');
-const modalShort=document.getElementById('modalShort');
-const modalUpgradeWrap=document.getElementById('modalUpgradeWrap');
-
-let activeCard=null, lastLottieUrl=null, activeItemMeta=null;
-
-function openItemModal(cardEl){
-  activeCard=cardEl;
-  activeItemMeta={
-    id: cardEl.id || ('gift_'+Date.now()),
-    title: cardEl.getAttribute('aria-label') || 'Подарок',
-    price: cardEl.querySelector('.price .price-value')?.textContent?.trim() || '0',
-    lottie: cardEl.querySelector('.media.lottie')?.getAttribute('data-lottie-url') || '',
-    invoice: cardEl.getAttribute('data-invoice-url') || '#',
-    purchased:false
-  };
-  showModalForMeta(activeItemMeta);
-}
-function openItemModalFromPurchased(item){
-  activeItemMeta={ id:item.id, title:item.title, price:item.price, lottie:item.lottie, invoice:item.invoice||'#', purchased:true };
-  showModalForMeta(activeItemMeta);
-}
-function showModalForMeta(meta){
-  modalTitle.textContent=meta.title||'Подарок';
-  modalPriceValue.textContent=meta.price||'0';
-  modalBuyPrice.textContent=meta.price||'0';
-  modalShort.textContent='';
-  modalBuyGift.href=meta.invoice||'#';
-  modalBuyStars.href=document.getElementById('bannerBtn').href||'#';
-
-  // В купленных — не показываем никаких апгрейдов/кнопок
-  if(meta.purchased){
-    modalBuyGift.classList.add('hidden');
-    modalUpgradeWrap.classList.add('hidden');
-  } else {
-    modalBuyGift.classList.remove('hidden');
-    modalUpgradeWrap.classList.add('hidden');
-  }
-
-  modalLottie.innerHTML='';
-  if(meta.lottie){
-    lastLottieUrl=meta.lottie;
-    const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', meta.lottie);
-    modalLottie.appendChild(c); loadLottieFor(c);
-  } else { modalLottie.innerHTML='<div class="lottie-placeholder">Нет анимации</div>'; }
-
-  itemOverlay.classList.add('open'); itemOverlay.setAttribute('aria-hidden','false');
-}
-function closeItemModal(){
-  modalLottie.innerHTML=''; itemOverlay.classList.remove('open'); itemOverlay.setAttribute('aria-hidden','true');
-}
-document.querySelectorAll('.card').forEach(card=> card.addEventListener('click',()=>openItemModal(card)));
-modalCloseBtn.addEventListener('click', closeItemModal);
-itemOverlay.addEventListener('click', (e)=>{ if(e.target===itemOverlay) closeItemModal(); });
-
-/* Buy (оставлено как было) */
-modalBuyGift.addEventListener('click', (e)=>{
-  e.preventDefault();
-  const selectedLink=(activeItemMeta&&activeItemMeta.invoice)?activeItemMeta.invoice:modalBuyGift.href||'#';
-  try{
-    if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.openInvoice==='function'){
-      try{ Telegram.WebApp.openInvoice(selectedLink); }
-      catch(err){ window.open(selectedLink,'_blank'); }
-    } else { window.open(selectedLink,'_blank'); }
-  }catch(e){ window.open(selectedLink,'_blank'); }
-});
-
-/* Tabs switching */
-document.querySelectorAll('.tabs .tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    document.querySelectorAll('.tabs .tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
-    tab.classList.add('active'); tab.setAttribute('aria-selected','true');
-    const mainApp=document.getElementById('mainApp'); const tab3=document.getElementById('tab3Content');
-    if(tab.id==='tab3'){ mainApp.style.display='none'; tab3.classList.add('open'); tab3.setAttribute('aria-hidden','false'); renderPurchasedGrid(); }
-    else { mainApp.style.display=''; tab3.classList.remove('open'); tab3.setAttribute('aria-hidden','true'); }
+const hideSoldCheckbox = $('#hideSold');
+function soldCards(){ return $$('.card[data-sold="true"]'); }
+function hideSoldAnimated(){
+  soldCards().forEach(c=>{
+    if(c.dataset._hidden==='1') return;
+    if(typeof gsap!=='undefined'){
+      gsap.to(c,{duration:.36,ease:'power2.out',opacity:0,scale:.98,y:-8,onComplete:()=>{ c.style.display='none'; c.dataset._hidden='1'; }});
+    } else { c.style.display='none'; c.dataset._hidden='1'; }
   });
-});
-
-/* Init purchased + sold state at load */
+}
+function showSoldAnimated(){
+  soldCards().forEach(c=>{
+    if(c.dataset._hidden!=='1') return;
+    c.style.display='';
+    if(typeof gsap!=='undefined'){
+      gsap.set(c,{opacity:0,scale:.98,y:-8});
+      gsap.to(c,{duration:.4,ease:'power2.out',opacity:1,scale:1,y:0,onComplete:()=>{ c.dataset._hidden='0'; }});
+    } else { c.dataset._hidden='0'; }
+  });
+}
+hideSoldCheckbox.addEventListener('change', ()=> hideSoldCheckbox.checked ? hideSoldAnimated() : showSoldAnimated());
 window.addEventListener('load', ()=>{
   if(hideSoldCheckbox.checked) setTimeout(hideSoldAnimated,120);
   else soldCards().forEach(c=>{ c.dataset._hidden='0'; c.style.display=''; c.style.opacity=1; c.style.transform='none'; });
   renderPurchasedGrid();
 });
-if(typeof gsap==='undefined') console.warn('GSAP не загружен — анимации упрощены.');
+
+/* =========================
+   Item modal + payment switch
+========================= */
+const itemOverlay   = $('#itemOverlay');
+const modalCloseBtn = $('#modalCloseBtn');
+const modalTitle    = $('#modalTitle');
+const modalLottie   = $('#modalLottie');
+const modalPriceVal = $('#modalPriceValue');
+const modalShort    = $('#modalShort');
+const modalBuyStars = $('#modalBuyStars');
+const modalBuyGift  = $('#modalBuyGift');
+const paySwitch     = $('#paySwitch');
+const payNote       = $('#payNote');
+
+let activeItemMeta = null;
+let lastLottieUrl  = null;
+let payMethod = 'ton'; // 'ton' | 'stars'
+
+function setPayMethod(m){
+  payMethod = m;
+  $$('#paySwitch .pay-opt').forEach(el=> el.classList.toggle('active', el.dataset.method===m));
+  if(m==='ton'){
+    modalBuyGift.textContent = 'Купить за TON (внутр. баланс)';
+    payNote.textContent = 'Оплата с внутреннего баланса мини-аппа.';
+    modalBuyStars.classList.add('hidden');
+  }else{
+    modalBuyGift.textContent = 'Купить за Stars';
+    payNote.textContent = 'Оплата через Telegram Stars.';
+    modalBuyStars.classList.remove('hidden'); // дублирующая кнопка «Купить через Stars»
+  }
+}
+paySwitch.addEventListener('click', (e)=>{
+  const opt = e.target.closest('.pay-opt'); if(!opt) return;
+  setPayMethod(opt.dataset.method);
+});
+
+function openItemModal(cardEl){
+  activeItemMeta = {
+    id: cardEl.id || ('gift_'+Date.now()),
+    title: cardEl.getAttribute('aria-label') || 'Подарок',
+    stars: cardEl.querySelector('.price .price-value')?.textContent?.trim() || '0',
+    tonPrice: Number(cardEl.getAttribute('data-ton-price')||'0'),
+    lottie: cardEl.querySelector('.media.lottie')?.getAttribute('data-lottie-url') || '',
+    invoice: cardEl.getAttribute('data-invoice-url') || '#',
+    purchased: false
+  };
+  showModalForMeta(activeItemMeta);
+}
+function openItemModalFromPurchased(item){
+  activeItemMeta = {
+    id: item.id, title: item.title, stars: item.stars, tonPrice: Number(item.tonPrice||0),
+    lottie: item.lottie, invoice: item.invoice||'#', purchased:true
+  };
+  showModalForMeta(activeItemMeta);
+}
+function showModalForMeta(meta){
+  modalTitle.textContent = meta.title || 'Подарок';
+  modalPriceVal.textContent = meta.stars || '0';
+  modalShort.textContent = meta.tonPrice ? (`Цена в TON: ${fmt(meta.tonPrice)} TON`) : '';
+  modalBuyStars.href = meta.invoice || '#';
+
+  // скрыть «улучшить»
+  $('#modalUpgradeWrap').classList.add('hidden');
+
+  // media
+  modalLottie.innerHTML='';
+  if(meta.lottie){
+    lastLottieUrl = meta.lottie;
+    const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', meta.lottie);
+    modalLottie.appendChild(c); loadLottieFor(c);
+  } else {
+    modalLottie.innerHTML='<div class="lottie-placeholder">Нет анимации</div>';
+  }
+
+  // по умолчанию TON
+  setPayMethod('ton');
+
+  // open
+  itemOverlay.classList.add('open'); itemOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+}
+function closeItemModal(){
+  modalLottie.innerHTML='';
+  itemOverlay.classList.remove('open'); itemOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow='';
+}
+$$('.card').forEach(card=> card.addEventListener('click',()=>openItemModal(card)));
+modalCloseBtn.addEventListener('click', closeItemModal);
+itemOverlay.addEventListener('click', (e)=>{ if(e.target===itemOverlay) closeItemModal(); });
+
+/* Купить */
+modalBuyGift.addEventListener('click', async (e)=>{
+  e.preventDefault();
+  if(!activeItemMeta) return;
+
+  if(payMethod==='ton'){
+    // оплата внутренним балансом
+    const need = Number(activeItemMeta.tonPrice || 0);
+    if(!need || need<=0){ alert('Нет цены TON для этого товара'); return; }
+    const have = getBalance();
+    if(have < need){
+      if(confirm('Недостаточно средств. Пополнить баланс?')){
+        openWalletOverlay('deposit');
+      }
+      return;
+    }
+    // списываем
+    addBalance(-need);
+    pushHistory({ type:'purchase', amount: need });
+    // сохраняем покупку
+    addPurchased({
+      id: activeItemMeta.id,
+      title: activeItemMeta.title,
+      stars: activeItemMeta.stars,
+      tonPrice: activeItemMeta.tonPrice,
+      lottie: activeItemMeta.lottie,
+      invoice: activeItemMeta.invoice
+    });
+    // success overlay
+    showSuccessOverlay(activeItemMeta);
+    closeItemModal();
+  }else{
+    // Stars — старый флоу
+    const selectedLink = activeItemMeta.invoice || '#';
+    try{
+      if(window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.openInvoice==='function'){
+        try{ Telegram.WebApp.openInvoice(selectedLink); }
+        catch(err){
+          try{
+            // резервный объектный формат (если нужно)
+            Telegram.WebApp.openInvoice({
+              title: activeItemMeta.title,
+              description: 'Покупка стикера',
+              payload: 'gift_'+Date.now(),
+              provider_token: 'YOUR_PROVIDER_TOKEN',
+              currency:'USD',
+              prices:[{label:'Цена', amount: Number(activeItemMeta.stars||0)*10 }] // фиктивно
+            }, function(res){ if(res && res.status==='paid'){ showSuccessOverlay(activeItemMeta); }});
+          }catch(err2){ window.open(selectedLink,'_blank'); }
+        }
+      } else { window.open(selectedLink,'_blank'); }
+    }catch(e){ console.warn('openInvoice error', e); window.open(selectedLink,'_blank'); }
+  }
+});
+
+/* Доп.кнопка Stars (оставил по твоей просьбе) */
+modalBuyStars.addEventListener('click', (e)=>{
+  e.preventDefault();
+  // принудительно вызвать stars-флоу
+  setPayMethod('stars');
+  modalBuyGift.click();
+});
+
+/* SUCCESS overlay */
+const successOverlay = $('#successOverlay');
+const successMedia   = $('#successMedia');
+const successCloseBtn= $('#successCloseBtn');
+function showSuccessOverlay(meta){
+  successMedia.innerHTML='';
+  if(meta?.lottie){
+    const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', meta.lottie);
+    successMedia.appendChild(c); loadLottieFor(c);
+  }else{
+    successMedia.innerHTML='<div class="lottie-placeholder">Нет медиа</div>';
+  }
+  successOverlay.classList.add('open'); successOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+}
+function closeSuccessOverlay(){
+  successMedia.innerHTML='';
+  successOverlay.classList.remove('open'); successOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow='';
+  renderPurchasedGrid();
+}
+successCloseBtn.addEventListener('click', closeSuccessOverlay);
+successOverlay.addEventListener('click', (e)=>{ if(e.target===successOverlay) closeSuccessOverlay(); });
+
+/* PURCHASE legacy */
+const purchaseOverlay = $('#purchaseOverlay');
+const purchasedMedia  = $('#purchasedMedia');
+$('#purchaseCloseBtn').addEventListener('click', ()=>{ purchasedMedia.innerHTML=''; purchaseOverlay.classList.remove('open'); purchaseOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; });
+
+/* =========================
+   Tabbar с плавностью, таб2 disabled
+========================= */
+function showMain(){ $('#mainApp').style.display=''; const t3=$('#tab3Content'); t3.classList.remove('fadein'); t3.classList.remove('open'); t3.setAttribute('aria-hidden','true'); }
+function showTab3(){
+  $('#mainApp').style.display='none';
+  const t3=$('#tab3Content'); t3.classList.add('open'); t3.setAttribute('aria-hidden','false');
+  // плавный вход
+  requestAnimationFrame(()=> t3.classList.add('fadein'));
+  renderPurchasedGrid();
+}
+$$('.tabs .tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    if(tab.classList.contains('disabled')) return; // неактивная
+    $$('.tabs .tab').forEach(t=>{ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+    tab.classList.add('active'); tab.setAttribute('aria-selected','true');
+
+    if(tab.id==='tab3'){ showTab3(); }
+    else { showMain(); }
+  });
+});
+
+/* =========================
+   Telegram user (имя/аватар)
+========================= */
+(function initTelegramUser(){
+  try {
+    if(window.Telegram && Telegram.WebApp){
+      Telegram.WebApp.ready();
+      const u = Telegram.WebApp.initDataUnsafe?.user || null;
+      const nameEl = $('#userName');
+      const avatarEl = $('#avatar');
+      const bigAvatar = $('#bigAvatar');
+      const bigName = $('#bigName');
+
+      if(u){
+        const parts = []; if(u.first_name) parts.push(u.first_name); if(u.last_name) parts.push(u.last_name);
+        if(parts.length===0 && u.username) parts.push(u.username);
+        if(parts.length===0) parts.push('User');
+        const displayName = parts.join(' ');
+        nameEl.textContent = displayName; if(bigName) bigName.textContent = displayName;
+
+        if(u.photo_url){
+          avatarEl.style.backgroundImage = `url("${u.photo_url}")`;
+          if(bigAvatar) bigAvatar.style.backgroundImage = `url("${u.photo_url}")`;
+        } else if(bigAvatar){
+          const initials = parts.map(p=>p[0]||'').join('').slice(0,2).toUpperCase() || 'U';
+          const bg = '#2b3345', fg = '#fff';
+          const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='${bg}' rx='40'/><text x='50%' y='50%' font-family='Arial,sans-serif' font-size='90' fill='${fg}' dominant-baseline='middle' text-anchor='middle'>${initials}</text></svg>`;
+          const url = `data:image/svg+xml;charset=utf8,${encodeURIComponent(svg)}`;
+          bigAvatar.style.backgroundImage = `url("${url}")`;
+          avatarEl.style.backgroundImage = `url("${url}")`;
+        }
+      }
+    }
+  } catch(err){ console.warn('Telegram init error', err); }
+})();
+
+/* =========================
+   Init internal state
+========================= */
+if(localStorage.getItem(LS_BALANCE)===null){ setBalance(0); } else { setBalance(getBalance()); }
 </script>
 </body>
 </html>
