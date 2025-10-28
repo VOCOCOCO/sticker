@@ -293,15 +293,15 @@ body{
         </button>
 
         <!-- Internal mini-app balance -->
-        <div id="balancePill" class="balance-pill" title="Баланс мини-аппа">
+        <div id="balancePill" class="balance-pill" title="Balance">
           <!-- ТВОЯ иконка TON (замени src) -->
-          <img id="tonIcon" class="ton-icon" src="ton-icon.png" alt="TON">
+          <img id="tonIcon" class="ton-icon" src="ton.svg" alt="TON">
           <span id="balanceValue" class="balance-val">0.00</span>
           <div id="plusBtn" class="plus-btn" role="button" aria-label="Пополнить">+</div>
           <svg id="walletCaret" class="wallet-caret" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div id="walletMenu" class="wallet-menu" role="menu" aria-hidden="true">
             <div class="row">Подключён:&nbsp;<span id="hfAddr" class="hf"></span></div>
-            <button id="disconnectBtn">Отключить кошелёк</button>
+            <button id="disconnectBtn">Disconnect TON</button>
           </div>
         </div>
       </div>
@@ -429,9 +429,9 @@ body{
       <div id="panelDeposit" class="tab-panel active">
         <div class="small">Подключён: <span id="connectedShort" class="hf-address">—</span></div>
         <div class="form-row">
-          <input id="amountInput" class="input-ton" type="number" step="0.000000001" min="0" placeholder="Сумма в TON" />
+          <input id="amountInput" class="input-ton" type="number" step="0.01" min="0" placeholder="Сумма в TON" />
           <button id="depositBtn" class="primary-btn">Пополнить</button>
-          <div class="small">После подтверждения в Tonkeeper средства зачислятся на внутренний баланс.</div>
+          <div class="small">После подтверждения в Tonkeeper средства зачислятся на баланс.</div>
         </div>
       </div>
 
@@ -750,7 +750,16 @@ function renderHistory() {
 const PURCHASE_KEY = 'turbo_gifts_purchased_v1';
 function readPurchased(){ try{ return JSON.parse(localStorage.getItem(PURCHASE_KEY) || '[]'); }catch(e){ return []; } }
 function savePurchased(list){ try{ localStorage.setItem(PURCHASE_KEY, JSON.stringify(list)); }catch(e){} }
-function addPurchased(item){ const list=readPurchased(); if(!list.some(x=>x.id===item.id)){ list.unshift(item); savePurchased(list); renderPurchasedGrid(); } }
+function addPurchased(item) {
+  const list = readPurchased();
+  list.unshift({
+    ...item,
+    uid: Date.now() + Math.random()
+  });
+  savePurchased(list);
+  renderPurchasedGrid();
+}
+
 
 function createPurchasedCardNode(item){
   const a = document.createElement('article');
@@ -922,5 +931,4 @@ document.addEventListener('DOMContentLoaded', ()=>{ renderPurchasedGrid(); rende
 
 </script>
 </body>
-
 </html>
