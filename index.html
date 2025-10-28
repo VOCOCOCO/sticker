@@ -212,12 +212,13 @@ body{
 .purchased-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* ✅ Вместо 2 фиксированных колонок */
+  grid-template-columns: repeat(2, minmax(170px, 1fr)); /* ✅ Две карточки всегда */
   gap: 14px;
   padding: 14px;
   max-height: calc(100vh - 220px);
   overflow-y: auto;
 }
+
 
 
 /* Карточка в инвентаре */
