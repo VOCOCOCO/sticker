@@ -198,25 +198,21 @@ body{
 .separator{ width:90%; height:1px; background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); margin: 4px 0 8px 0; border-radius:2px; }
 /* === INVENTORY FIXED GRID LIKE MARKET === */
 /* === INVENTORY GRID LIKE MARKET === */
-.purchased-grid {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 в ряд как в маркете */
-  gap: 14px;
-  padding: 14px;
-  max-height: calc(100vh - 220px); /* скролл если много */
-  overflow-y: auto;
-}
 
-/* --- INVENTORY CARD EXACTLY LIKE MARKET --- */
+
+/* === INVENTORY EXACT COPY OF MARKET === */
 .purchased-grid {
-  width: 100%;
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* ✅ как в маркете */
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   padding: 14px;
+  justify-items: center;
+  align-items: start;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
   overflow-y: auto;
-  max-height: calc(100vh - 220px); /* ✅ скролл если много */
+  max-height: calc(100vh - 200px); /* скролл, если много карточек */
 }
 
 .purchased-card {
@@ -226,35 +222,34 @@ body{
   background: radial-gradient(120% 120% at 0% 0%, #20263a 0%, #1a1f2d 40%, #161b28 100%);
   border: 1px solid #262c41;
   width: 100%;
-  
-  height: 260px;     /* ✅ квадрат 1:1 */
+  max-width: 260px;
+  height: 260px;
+  --card-footer-h: 0px; /* ✅ фикс */
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  cursor: pointer;
+  justify-content: center;
+  align-items: center;
   box-shadow: var(--shadow);
+  cursor: pointer;
 }
 
 
-/* точно как .card в маркете */
 .purchased-card .media {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: calc(100% - 56px); /* ✅ --card-footer-h */
+  left: 0; right: 0; top: 0;
+  height: calc(100% - var(--card-footer-h));
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
 }
 
-/* убрали низ с ценой */
+/* Убираем футер полностью */
 .purchased-card .footer {
   display: none !important;
 }
 
-/* ленточка тоже как в маркете */
+/* Лента (1 из 100) как в маркете */
 .purchased-card .ribbon {
   position: absolute;
   top: 10px;
@@ -265,15 +260,15 @@ body{
   align-items: center;
   justify-content: center;
   transform: rotate(35deg);
-  transform-origin: center;
   background: linear-gradient(90deg,#66c2ff,#3aa6ff);
-  color: white;
-  font-weight: bold;
+  color: #fff;
+  font-weight: 700;
   font-size: 12px;
   border-radius: 6px;
   pointer-events: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 8px rgba(0,0,0,.25);
 }
+
 
 
 
