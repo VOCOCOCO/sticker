@@ -208,20 +208,17 @@ body{
   overflow-y: auto;
 }
 
-/* === INVENTORY GRID LIKE MARKET === */
+/* --- INVENTORY CARD EXACTLY LIKE MARKET --- */
 .purchased-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(2, minmax(170px, 1fr)); /* ✅ Две карточки всегда */
+  grid-template-columns: repeat(2, 1fr); /* ✅ как в маркете */
   gap: 14px;
   padding: 14px;
-  max-height: calc(100vh - 220px);
   overflow-y: auto;
+  max-height: calc(100vh - 220px); /* ✅ скролл если много */
 }
 
-
-
-/* Карточка в инвентаре */
 .purchased-card {
   position: relative;
   overflow: hidden;
@@ -229,8 +226,8 @@ body{
   background: radial-gradient(120% 120% at 0% 0%, #20263a 0%, #1a1f2d 40%, #161b28 100%);
   border: 1px solid #262c41;
   width: 100%;
-  max-width: 260px;
-  height: 260px; /* как в маркете */
+  
+  height: 260px;     /* ✅ квадрат 1:1 */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -238,24 +235,26 @@ body{
   box-shadow: var(--shadow);
 }
 
+
+/* точно как .card в маркете */
 .purchased-card .media {
   position: absolute;
-  top: 0;
   left: 0;
   right: 0;
-  bottom: 0; /* ✅ вместо calc */
+  top: 0;
+  height: calc(100% - 56px); /* ✅ --card-footer-h */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
 }
 
-/* Убираем цену */
+/* убрали низ с ценой */
 .purchased-card .footer {
   display: none !important;
 }
 
-/* Ribbon как в маркете */
+/* ленточка тоже как в маркете */
 .purchased-card .ribbon {
   position: absolute;
   top: 10px;
@@ -266,6 +265,7 @@ body{
   align-items: center;
   justify-content: center;
   transform: rotate(35deg);
+  transform-origin: center;
   background: linear-gradient(90deg,#66c2ff,#3aa6ff);
   color: white;
   font-weight: bold;
@@ -274,6 +274,7 @@ body{
   pointer-events: none;
   box-shadow: 0 4px 8px rgba(0,0,0,0.25);
 }
+
 
 
 .hidden{ display:none !important; }
