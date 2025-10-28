@@ -89,7 +89,7 @@ body{
   box-shadow:0 12px 32px rgba(0,0,0,.5); transform-origin: top right;
 }
 .wallet-menu.open{ display:block; }
-.wallet-menu .row{ display:flex; align-items:center; gap:8px; color:#94a5c7; font-size:12px; margin:4px 0 6px; }
+.wallet-menu .row{ display:flex; align-items:center; gap:8px; color:#94a5c7; font-size:12px; margin:px 0 6px; padding: 10px 12px; }
 .wallet-menu .hf{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#cfe0ff; }
 .wallet-menu button{ width:100%; background:transparent; border:0; color:#eaeefc; text-align:left; padding:10px 12px; border-radius:10px; font-weight:800; cursor:pointer; }
 .wallet-menu button:hover{ background:#1a2030; }
@@ -196,10 +196,83 @@ body{
 .big-avatar{ width:84px; height:84px; border-radius:50%; background:#222 center/cover; border:3px solid #303544; }
 .profile-name{ font-weight:800; font-size:18px; }
 .separator{ width:90%; height:1px; background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); margin: 4px 0 8px 0; border-radius:2px; }
-.purchased-grid{ width:100%; display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; padding: 0 10px 30px 10px; box-sizing:border-box; }
-.purchased-card{ position:relative; overflow:hidden; border-radius:14px; background: radial-gradient(120% 120% at 0% 0%, #1f2535 0%, #161a26 40%, #0f1116 100%); border:1px solid #232734; width:100%; max-width:220px; height:220px; display:flex; flex-direction:column; justify-content:flex-end; box-shadow:0 10px 28px rgba(0,0,0,.4); transition:transform .12s; cursor:pointer; }
-.purchased-card .media{ position:absolute; left:0; right:0; top:0; height:calc(100% - 44px); display:flex; align-items:center; justify-content:center; padding:10px; }
-.purchased-card .footer{ height:44px; display:flex; align-items:center; justify-content:center; width:100%; background:transparent; border-top:1px solid rgba(255,255,255,.02); }
+/* === INVENTORY FIXED GRID LIKE MARKET === */
+/* === INVENTORY GRID LIKE MARKET === */
+.purchased-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 в ряд как в маркете */
+  gap: 14px;
+  padding: 14px;
+  max-height: calc(100vh - 220px); /* скролл если много */
+  overflow-y: auto;
+}
+
+/* === INVENTORY GRID LIKE MARKET === */
+.purchased-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 в ряд как в маркете */
+  gap: 14px;
+  padding: 14px;
+  max-height: calc(100vh - 220px); /* скролл если много */
+  overflow-y: auto;
+}
+
+/* Карточка в инвентаре */
+.purchased-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: radial-gradient(120% 120% at 0% 0%, #20263a 0%, #1a1f2d 40%, #161b28 100%);
+  border: 1px solid #262c41;
+  width: 100%;
+  max-width: 260px;
+  height: 260px; /* как в маркете */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.purchased-card .media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0; /* ✅ вместо calc */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+
+/* Убираем цену */
+.purchased-card .footer {
+  display: none !important;
+}
+
+/* Ribbon как в маркете */
+.purchased-card .ribbon {
+  position: absolute;
+  top: 10px;
+  right: -22px;
+  width: 120px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(35deg);
+  background: linear-gradient(90deg,#66c2ff,#3aa6ff);
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  border-radius: 6px;
+  pointer-events: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+
 
 .hidden{ display:none !important; }
 .lottie-placeholder{ color:var(--muted); font-size:13px; text-align:center; padding:8px }
@@ -761,20 +834,33 @@ function addPurchased(item) {
 }
 
 
-function createPurchasedCardNode(item){
+function createPurchasedCardNode(item) {
   const a = document.createElement('article');
   a.className = 'purchased-card';
-  a.setAttribute('data-purchased-id', item.id);
-  const media = document.createElement('div'); media.className='media'; media.setAttribute('data-lottie-url', item.lottie||'');
-  const footer = document.createElement('div'); footer.className='footer';
-  const priceWrap = document.createElement('div'); priceWrap.className='price'; priceWrap.style.display='inline-flex'; priceWrap.style.alignItems='center'; priceWrap.style.gap='8px'; priceWrap.style.color='#fff';
-  priceWrap.innerHTML=`<img src="stars-DBKMczxe.png" alt="icon" class="price-icon" style="width:14px;height:14px"><span class="price-value">${item.price}</span>`;
-  footer.appendChild(priceWrap);
-  a.appendChild(media); a.appendChild(footer);
-  const inner = document.createElement('div'); inner.style.width='100%'; inner.style.height='100%'; if(item.lottie) inner.setAttribute('data-lottie-url', item.lottie); media.appendChild(inner); loadLottieFor(inner);
-  a.addEventListener('click', ()=> openItemModalFromPurchased(item));
+
+  // ✅ Ribbon как в маркете
+  const ribbon = document.createElement('div');
+  ribbon.className = 'ribbon';
+  ribbon.textContent = item.ribbon || 'OWNED';
+  a.appendChild(ribbon);
+
+  // ✅ Media (анимация)
+  const media = document.createElement('div');
+  media.className = 'media';
+  const inner = document.createElement('div');
+  inner.setAttribute('data-lottie-url', item.lottie);
+  inner.style.width = '100%';
+  inner.style.height = '100%';
+  media.appendChild(inner);
+  a.appendChild(media);
+  loadLottieFor(inner);
+
+  // ✅ Клик по подарку — открыть модалку
+  a.addEventListener('click', () => openItemModalFromPurchased(item));
+
   return a;
 }
+
 function renderPurchasedGrid(){
   const grid = $('#purchasedGrid');
   grid.innerHTML = '';
