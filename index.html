@@ -308,28 +308,17 @@ body{
 .toast img{ width:16px; height:16px; object-fit:contain; display:block; }
 .toast.show{ pointer-events:auto; }
 
-/* ===== History (TON style) ===== */
 .history-list {
-  max-height: 320px;
-  overflow-y: auto;
-  padding-right: 6px;
-  scrollbar-width: thin;
-  scrollbar-color: #2a3245 #0f1116;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 2px 20px;
+  max-height: 300px;       /* фиксируем доступную высоту */
+  overflow-y: auto;        /* включаем скролл */
+  overflow-x: hidden;      /* отключаем горизонтальный */
+  scrollbar-width: thin;   /* тонкий скролл в Firefox */
 }
 
-.history-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.history-list::-webkit-scrollbar-track {
-  background: #0f1116;
-  border-radius: 4px;
-}
-
-.history-list::-webkit-scrollbar-thumb {
-  background-color: #2a3245;
-  border-radius: 4px;
-}
 
 .history-date { font-size:13px; font-weight:700; color:#9aa3b2; text-transform:uppercase; letter-spacing:.6px; margin-left:2px; }
 .history-item { background:#121722; border:1px solid #1f2633; border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; }
@@ -398,7 +387,7 @@ body{
         </div>
       </article>
 
-      <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Exclusive reward">
+      <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$8Vv2OVTzGUgzFAAAi8uOPALnoOI" role="article" aria-label="Exclusive reward">
         <div class="ribbon" aria-hidden="true">1 of 110</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/VOCOCOCO/gifts/refs/heads/main/sticker%20(5).json">
           <div class="lottie-placeholder">Lottie 2</div>
@@ -411,8 +400,8 @@ body{
         </div>
       </article>
 
-      <article class="card" id="cardX" data-sold="false" data-invoice-url="https://t.me/$invoice_example" role="article" aria-label="Voco Pepe">
-  <div class="ribbon" aria-hidden="true">1 из 50</div>
+      <article class="card" id="cardX" data-sold="false" data-invoice-url="https://t.me/$xRPBRVTzGUg0FAAAd7WB0MRQ_sQ" role="article" aria-label="Voco Pepe">
+  <div class="ribbon" aria-hidden="true">1 of 50</div>
   <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/VOCOCOCO/gifts/refs/heads/main/sticker%20(2).json">
     <div class="lottie-placeholder">Lottie 3</div>
   </div>
@@ -430,13 +419,13 @@ body{
   <!-- Tabbar -->
   <nav class="tabbar" role="navigation" aria-label="Основная навигация">
     <div class="tabs" role="tablist">
-      <div class="tab active" role="tab" aria-selected="true" id="tab1" title="Маркет">
+      <div class="tab active" role="tab" aria-selected="true" id="tab1" title="Market">
         <img src="магазин.png" alt="tab1 icon">
       </div>
-      <div class="tab disabled" role="tab" aria-selected="false" id="tab2" title="Неактивно">
+      <div class="tab disabled" role="tab" aria-selected="false" id="tab2" title="/">
         <img src="ok.png" alt="tab2 icon">
       </div>
-      <div class="tab" role="tab" aria-selected="false" id="tab3" title="Инвентарь">
+      <div class="tab" role="tab" aria-selected="false" id="tab3" title="Gifts">
         <img src="инвентарь.png" alt="tab3 icon">
       </div>
     </div>
@@ -477,7 +466,7 @@ body{
 
         <!-- переключатель оплаты (ТОЛЬКО в модалке рынка) -->
         <div id="payRow" class="payton-row">
-          <div class="payton-label">Оплата в TON</div>
+          <div class="payton-label">Payment in TON</div>
           <div id="payTonSwitch" class="switch" role="switch" aria-checked="false"></div>
         </div>
 
@@ -495,21 +484,21 @@ body{
   <div id="walletOverlay" class="wallet-overlay" aria-hidden="true">
     <div class="wallet-modal" role="dialog" aria-modal="true">
       <div class="wallet-header">
-        <div class="wallet-title">Кошелёк</div>
-        <button id="walletClose" class="wallet-close" aria-label="Закрыть">×</button>
+        <div class="wallet-title">Wallet</div>
+        <button id="walletClose" class="wallet-close" aria-label="Close">×</button>
       </div>
 
       <div class="wallet-tabs">
-        <div id="tabDeposit"  class="wallet-tab active">Пополнить</div>
-        <div id="tabHistory"  class="wallet-tab">История</div>
+        <div id="tabDeposit"  class="wallet-tab active">Deposit</div>
+        <div id="tabHistory"  class="wallet-tab">History</div>
       </div>
 
       <div id="panelDeposit" class="tab-panel active">
-        <div class="small">Подключён: <span id="connectedShort" class="hf-address">—</span></div>
+        <div class="small">Connected: <span id="connectedShort" class="hf-address">—</span></div>
         <div class="form-row">
-          <input id="amountInput" class="input-ton" type="number" step="0.01" min="0" placeholder="Сумма в TON" />
-          <button id="depositBtn" class="primary-btn">Пополнить</button>
-          <div class="small">После подтверждения в Tonkeeper средства зачислятся на баланс.</div>
+          <input id="amountInput" class="input-ton" type="number" step="0.01" min="0" placeholder="Payment in TON" />
+          <button id="depositBtn" class="primary-btn">Deposit</button>
+          <div class="small">After confirmed the transaction in Tonkeeper, funds will be credited to your balance.</div>
         </div>
       </div>
 
@@ -522,7 +511,7 @@ body{
   <!-- Toast -->
   <div id="toast" class="toast" role="status" aria-live="polite">
     <img id="toastIcon" alt="ton">
-    <span id="toastText">Баланс пополнен</span>
+    <span id="toastText">The balance has been changed</span>
   </div>
 
 <script>
