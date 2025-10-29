@@ -196,35 +196,37 @@ body{
 .big-avatar{ width:84px; height:84px; border-radius:50%; background:#222 center/cover; border:3px solid #303544; }
 .profile-name{ font-weight:800; font-size:18px; }
 .separator{ width:90%; height:1px; background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); margin: 4px 0 8px 0; border-radius:2px; }
-/* === INVENTORY FIXED GRID LIKE MARKET === */
-/* === INVENTORY GRID LIKE MARKET === */
 
-
-/* INVENTORY GRID — точно как в маркете */
+/* === INVENTORY (exact copy of market cards) === */
 .purchased-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 в ряд всегда */
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   padding: 14px;
   justify-items: center;
   align-items: start;
+  max-height: calc(100vh - 260px); /* скролл, когда много */
+  overflow-y: auto;
 }
 
-/* Карточка в инвентаре — 1:1 квадрат и как в маркете */
 .purchased-card {
   position: relative;
   overflow: hidden;
-  width: 100%;
-  max-width: 260px;        /* как в маркете */
-  aspect-ratio: 1 / 1;     /* ✅ квадрат */
   border-radius: 16px;
   background: radial-gradient(120% 120% at 0% 0%, #20263a 0%, #1a1f2d 40%, #161b28 100%);
   border: 1px solid #262c41;
+  width: 100%;
+  max-width: 260px;      /* как в маркете */
+  aspect-ratio: 1 / 1;   /* квадрат 1:1 всегда */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   box-shadow: var(--shadow);
   cursor: pointer;
+  transition: transform .12s ease;
 }
+.purchased-card:active{ transform: translateY(1px); }
 
-/* Контент по центру */
 .purchased-card .media {
   position: absolute;
   inset: 0;
@@ -233,13 +235,18 @@ body{
   justify-content: center;
   padding: 14px;
 }
-
-/* Убираем цену */
-.purchased-card .footer {
-  display: none !important;
+.purchased-card img,
+.purchased-card canvas,
+.purchased-card svg,
+.purchased-card div {
+  max-width: 100%;
+  max-height: 100%;
 }
 
-/* Лента OWNED как в маркете */
+/* убираем цену в инвентаре */
+.purchased-card .footer { display: none !important; }
+
+/* Лента OWNED */
 .purchased-card .ribbon {
   position: absolute;
   top: 10px;
@@ -250,30 +257,19 @@ body{
   align-items: center;
   justify-content: center;
   transform: rotate(35deg);
+  transform-origin: center;
   background: linear-gradient(90deg,#66c2ff,#3aa6ff);
-  color: white;
-  font-weight: bold;
+  color: #fff;
+  font-weight: 700;
   font-size: 12px;
   border-radius: 6px;
-  pointer-events: none;
   box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  pointer-events: none;
+  text-transform: uppercase;
 }
-
-/* Прокрутка если много карточек */
-.purchased-grid {
-  max-height: calc(100vh - 240px);
-  overflow-y: auto;
-}
-
-
-
-
-
 
 .hidden{ display:none !important; }
 .lottie-placeholder{ color:var(--muted); font-size:13px; text-align:center; padding:8px }
-
-
 
 /* Toast */
 .toast{
@@ -287,62 +283,15 @@ body{
 .toast.show{ pointer-events:auto; }
 
 /* ===== History (TON style) ===== */
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 4px 2px 20px;
-}
-
-.history-date {
-  font-size: 13px;
-  font-weight: 700;
-  color: #9aa3b2;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin-left: 2px;
-}
-
-.history-item {
-  background: #121722;
-  border: 1px solid #1f2633;
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.history-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.history-title {
-  font-weight: 700;
-  font-size: 15px;
-  color: white;
-}
-
-.history-time {
-  font-size: 12px;
-  color: #8b93a7;
-}
-
-.history-amount {
-  font-weight: 800;
-  font-size: 15px;
-}
-
-.plus {
-  color: #4cd964; /* GREEN */
-}
-
-.minus {
-  color: #ff3b30; /* RED */
-}
-
+.history-list { display:flex; flex-direction:column; gap:18px; padding:4px 2px 20px; }
+.history-date { font-size:13px; font-weight:700; color:#9aa3b2; text-transform:uppercase; letter-spacing:.6px; margin-left:2px; }
+.history-item { background:#121722; border:1px solid #1f2633; border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; }
+.history-left { display:flex; flex-direction:column; gap:4px; }
+.history-title { font-weight:700; font-size:15px; color:white; }
+.history-time { font-size:12px; color:#8b93a7; }
+.history-amount { font-weight:800; font-size:15px; }
+.plus { color:#4cd964; }
+.minus { color:#ff3b30; }
 </style>
 </head>
 <body>
@@ -363,7 +312,6 @@ body{
 
         <!-- Internal mini-app balance -->
         <div id="balancePill" class="balance-pill" title="Balance">
-          <!-- ТВОЯ иконка TON (замени src) -->
           <img id="tonIcon" class="ton-icon" src="ton.svg" alt="TON">
           <span id="balanceValue" class="balance-val">0.00</span>
           <div id="plusBtn" class="plus-btn" role="button" aria-label="Пополнить">+</div>
@@ -505,11 +453,9 @@ body{
       </div>
 
       <div id="panelHistory" class="tab-panel">
-  <div id="historyList" class="history-list">
-    <!-- История будет рендериться здесь -->
-  </div>
-</div>
-
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Toast -->
@@ -526,6 +472,9 @@ const TONCENTER_KEY    = '4450d174a1faa93de6c3acbc449cb55e7b60d2c83799111ae9e55a
 const MANIFEST_URL     = 'https://vocococo.github.io/ton-connect/tonconnect-manifest.json';
 const APP_BALANCE_KEY  = 'tgifts_balance_v1';
 const APP_HISTORY_KEY  = 'tgifts_history_v1';
+
+/* Курс: 100★ = 0.66 TON => 1★ = 0.0066 TON */
+const STAR_TO_TON = 0.0066;
 
 /* ========= UTIL ========= */
 const $ = s => document.querySelector(s);
@@ -555,11 +504,9 @@ function showToast(text){
 const tonUI = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: MANIFEST_URL,
   actionsConfiguration: {
-    twaReturnUrl: 'https://t.me' // фикс окна Tonkeeper без username
+    twaReturnUrl: 'https://t.me'
   }
 });
-
-
 
 /* ========= INTERNAL BALANCE + HISTORY ========= */
 function readBalance(){ return Number(localStorage.getItem(APP_BALANCE_KEY) || '0'); }
@@ -643,7 +590,6 @@ const panelHistory= $('#panelHistory');
 const connectedShort = $('#connectedShort');
 const amountInput = $('#amountInput');
 const depositBtn  = $('#depositBtn');
-const txList      = $('#txList');
 
 function setWalletTab(which){
   [tabDeposit,tabHistory].forEach(t=>t.classList.remove('active'));
@@ -653,7 +599,6 @@ function setWalletTab(which){
   } else {
     tabHistory.classList.add('active'); panelHistory.classList.add('active'); renderHistory();
   }
-  // плавность панелей
   animateOpen(which==='deposit' ? panelDeposit : panelHistory);
 }
 function openWallet(which='deposit'){
@@ -693,6 +638,7 @@ async function findOutgoingToMerchant(fromAddress, expectedNano, lookBackSec=300
   return { found:false };
 }
 
+/* ========= Deposit ========= */
 depositBtn.addEventListener('click', async () => {
   if (!tonUI.connected) {
     await tonUI.openModal();
@@ -708,32 +654,17 @@ depositBtn.addEventListener('click', async () => {
   const nanoAmount = (amount * 1e9).toFixed(0);
 
   try {
-    // ✅ Сначала закрываем окно кошелька, иначе Tonkeeper скрывается под ним
     closeWallet();
 
-    // ✅ Вызываем Tonkeeper окно ПОВЕРХ Mini App (как на твоём фото)
     await tonUI.sendTransaction({
       validUntil: Math.floor(Date.now() / 1000) + 300,
-      messages: [
-        {
-          address: MERCHANT_ADDRESS,
-          amount: nanoAmount
-        }
-      ]
+      messages: [ { address: MERCHANT_ADDRESS, amount: nanoAmount } ]
     });
 
-    // ✅ Сразу зачисляем TON на внутренний баланс (0% комиссия)
     writeBalance(readBalance() + amount);
 
-    // ✅ Добавляем в историю
-    addHistory({
-      type: 'deposit',
-      amount,
-      date: Date.now(),
-      from: tonUI.account.address
-    });
+    addHistory({ type:'deposit', amount, date: Date.now(), from: tonUI.account.address });
 
-    // ✅ Уведомление
     showToast(`+${amount} TON зачислено ✅`);
 
   } catch (err) {
@@ -742,8 +673,7 @@ depositBtn.addEventListener('click', async () => {
   }
 });
 
-
-
+/* ========= History render ========= */
 function renderHistory() {
   const list = readHistory();
   const historyList = document.getElementById('historyList');
@@ -754,7 +684,6 @@ function renderHistory() {
     return;
   }
 
-  // группировка по датам
   const groups = {};
   list.forEach(tx => {
     const date = new Date(tx.date).toLocaleDateString('en-US', {
@@ -765,18 +694,15 @@ function renderHistory() {
   });
 
   Object.keys(groups).forEach(date => {
-    // дата
     const dateEl = document.createElement('div');
     dateEl.className = 'history-date';
     dateEl.textContent = date;
     historyList.appendChild(dateEl);
 
-    // транзакции за этот день
     groups[date].forEach(tx => {
       const item = document.createElement('div');
       item.className = 'history-item';
 
-      // левая часть
       const left = document.createElement('div');
       left.className = 'history-left';
 
@@ -793,7 +719,6 @@ function renderHistory() {
       left.appendChild(title);
       left.appendChild(time);
 
-      // правая часть (сума)
       const amount = document.createElement('div');
       amount.className = 'history-amount';
       if (tx.type === 'deposit') {
@@ -801,9 +726,7 @@ function renderHistory() {
         amount.textContent = `+${tx.amount} TON`;
       } else {
         amount.classList.add('minus');
-        // если покупка оплачена TON
         if (tx.payWith === 'ton') amount.textContent = `-${tx.amount} TON`;
-        // если покупка звездами
         else amount.textContent = `-${tx.amount} ⭐`;
       }
 
@@ -814,33 +737,29 @@ function renderHistory() {
   });
 }
 
-
 /* ========= Inventory storage ========= */
 const PURCHASE_KEY = 'turbo_gifts_purchased_v1';
 function readPurchased(){ try{ return JSON.parse(localStorage.getItem(PURCHASE_KEY) || '[]'); }catch(e){ return []; } }
 function savePurchased(list){ try{ localStorage.setItem(PURCHASE_KEY, JSON.stringify(list)); }catch(e){} }
 function addPurchased(item) {
   const list = readPurchased();
-  list.unshift({
-    ...item,
-    uid: Date.now() + Math.random()
-  });
+  list.unshift({ ...item, uid: Date.now() + Math.random() });
   savePurchased(list);
   renderPurchasedGrid();
 }
 
-
+/* ========= Inventory cards ========= */
 function createPurchasedCardNode(item) {
   const a = document.createElement('article');
   a.className = 'purchased-card';
 
-  // ✅ Ribbon как в маркете
+  // Лента OWNED
   const ribbon = document.createElement('div');
   ribbon.className = 'ribbon';
   ribbon.textContent = item.ribbon || 'OWNED';
   a.appendChild(ribbon);
 
-  // ✅ Media (анимация)
+  // Media
   const media = document.createElement('div');
   media.className = 'media';
   const inner = document.createElement('div');
@@ -851,17 +770,19 @@ function createPurchasedCardNode(item) {
   a.appendChild(media);
   loadLottieFor(inner);
 
-  // ✅ Клик по подарку — открыть модалку
+  // Клик — открыть модалку
   a.addEventListener('click', () => openItemModalFromPurchased(item));
 
   return a;
 }
-
 function renderPurchasedGrid(){
   const grid = $('#purchasedGrid');
   grid.innerHTML = '';
   const list = readPurchased();
-  if(!list.length){ grid.innerHTML = '<div style="color:var(--muted); padding:12px; grid-column:1/-1; text-align:center">Пока нет купленных подарков</div>'; return; }
+  if(!list.length){
+    grid.innerHTML = '<div style="color:var(--muted); padding:12px; grid-column:1/-1; text-align:center">Пока нет купленных подарков</div>';
+    return;
+  }
   list.forEach(item=> grid.appendChild(createPurchasedCardNode(item)));
 }
 
@@ -900,6 +821,21 @@ const mintBtn = $('#mintBtn');
 
 let activeItemMeta = null, lastLottieUrl=null;
 
+/* Обновление надписи на кнопке "Buy gift" в зависимости от режима оплаты */
+function updateBuyButtonLabel(){
+  if(!activeItemMeta) return;
+  const stars = Number(activeItemMeta.priceStars) || 0;
+  const payTon = payTonSwitch.classList.contains('on');
+
+  if(payTon){
+    const tonAmount = (stars * STAR_TO_TON);
+    const tonStr = (tonAmount < 1 ? tonAmount.toFixed(4) : tonAmount.toFixed(3));
+    modalBuyGift.textContent = `Buy gift — TON ${tonStr}`;
+  }else{
+    modalBuyGift.innerHTML = `Buy gift — ★ <span id="modalBuyPrice">${stars}</span>`;
+  }
+}
+
 function openItemModal(cardEl){
   activeItemMeta = {
     id: cardEl.id || ('gift_' + Date.now()),
@@ -918,18 +854,22 @@ function openItemModalFromPurchased(item){
 function showItemModal(meta){
   modalTitle.textContent = meta.title;
   modalPriceValue.textContent = meta.priceStars;
-  modalBuyPrice.textContent = meta.priceStars;
   modalShort.textContent = '';
   modalBuyStars.href = $('#bannerBtn').href || '#';
   modalBuyGift.href = meta.invoice || '#';
 
   modalLottie.innerHTML='';
-  if(meta.lottie){ lastLottieUrl = meta.lottie; const c=document.createElement('div'); c.style.width='100%'; c.style.height='100%'; c.setAttribute('data-lottie-url', meta.lottie); modalLottie.appendChild(c); loadLottieFor(c); }
-  else { modalLottie.innerHTML='<div class="lottie-placeholder">Нет анимации</div>'; }
+  if(meta.lottie){
+    lastLottieUrl = meta.lottie;
+    const c=document.createElement('div');
+    c.style.width='100%'; c.style.height='100%';
+    c.setAttribute('data-lottie-url', meta.lottie);
+    modalLottie.appendChild(c); loadLottieFor(c);
+  } else {
+    modalLottie.innerHTML='<div class="lottie-placeholder">Нет анимации</div>';
+  }
 
-  // режимы для маркета/инвентаря
   if(meta.purchased){
-    // Инвентарь: нет Stars, нет TON переключателя; вместо «Купить» — Mint disabled
     modalBuyStars.classList.add('hidden');
     payRow.classList.add('hidden');
     modalBuyGift.classList.add('hidden');
@@ -941,8 +881,10 @@ function showItemModal(meta){
     mintBtn.classList.add('hidden');
   }
 
-  // toggle по умолчанию OFF
-  payTonSwitch.classList.remove('on'); payTonSwitch.setAttribute('aria-checked','false');
+  // сброс и первичное обновление текста кнопки
+  payTonSwitch.classList.remove('on');
+  payTonSwitch.setAttribute('aria-checked','false');
+  updateBuyButtonLabel();
 
   itemOverlay.classList.add('open'); itemOverlay.setAttribute('aria-hidden','false');
   animateOpen($('.modal-card'));
@@ -956,26 +898,27 @@ payTonSwitch.addEventListener('click', ()=>{
   payTonSwitch.classList.toggle('on');
   const on = payTonSwitch.classList.contains('on');
   payTonSwitch.setAttribute('aria-checked', on?'true':'false');
+  updateBuyButtonLabel();
 });
 
 modalBuyGift.addEventListener('click', async (e)=>{
   const payInTon = payTonSwitch.classList.contains('on');
   if(payInTon){
     e.preventDefault();
-    // Платим с ВНУТРЕННЕГО баланса TON
-    const priceTON = Number(activeItemMeta.priceStars);
+    const starsPrice = Number(activeItemMeta.priceStars);
+    const tonPrice = starsPrice * STAR_TO_TON;         // списываем внутр. TON-баланс
     const bal = readBalance();
-    if(bal < priceTON){ alert('Недостаточно средств на внутреннем балансе'); return; }
-    writeBalance(bal - priceTON);
-    addHistory({ type:'purchase', amount: -priceTON, date: Date.now(), item: activeItemMeta.title });
-    addPurchased({ id:activeItemMeta.id, title:activeItemMeta.title, price:activeItemMeta.priceStars, lottie:activeItemMeta.lottie, invoice:activeItemMeta.invoice });
+    if(bal + 1e-9 < tonPrice){ alert('Недостаточно средств на внутреннем TON-балансе'); return; }
+    writeBalance(bal - tonPrice);
+    addHistory({ type:'purchase', amount: tonPrice, date: Date.now(), item: activeItemMeta.title, payWith:'ton' });
+    addPurchased({ id:activeItemMeta.id, title:activeItemMeta.title, price:activeItemMeta.priceStars, lottie:activeItemMeta.lottie, invoice:activeItemMeta.invoice, ribbon:'OWNED' });
     closeItem();
-    showToast(`Куплено за ${priceTON.toFixed(4)} TON`);
+    showToast(`Куплено за TON ${tonPrice < 1 ? tonPrice.toFixed(4) : tonPrice.toFixed(3)}`);
   }
-  // Если переключатель OFF — остаётся оплата Stars по твоей ссылке (как было)
+  // Если переключатель OFF — остаётся оплата Stars по ссылке (как было)
 });
 
-/* ========= Tabs switching with animation ========= */
+/* ========= Tabs switching ========= */
 const tab1 = $('#tab1'), tab2 = $('#tab2'), tab3 = $('#tab3');
 const mainApp = $('#mainApp'); const tab3Content = $('#tab3Content');
 function openTab(id){
@@ -1010,7 +953,6 @@ tab3.addEventListener('click', ()=> openTab('tab3'));
 
 /* ========= init purchased grid ========= */
 document.addEventListener('DOMContentLoaded', ()=>{ renderPurchasedGrid(); renderBalancePill(); });
-
 </script>
 </body>
 </html>
