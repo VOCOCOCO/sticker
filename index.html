@@ -190,7 +190,16 @@ body{
 .hf-address{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#cfe0ff; letter-spacing:.2px; }
 
 /* Purchased (inventory) */
-.tab3-wrapper{ padding:16px; display:none; flex-direction:column; align-items:center; gap:12px; }
+.tab3-wrapper {
+  padding:16px;
+  display:none;
+  flex-direction:column;
+  gap:12px;
+  width: 100%;          /* ✅ растягиваем */
+  max-width: 560px;     /* ✅ как весь app */
+  margin: 0 auto;       /* ✅ центрируем нормально */
+}
+
 .tab3-wrapper.open{ display:flex; }
 .tab3-profile{ display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:6px; }
 .big-avatar{ width:84px; height:84px; border-radius:50%; background:#222 center/cover; border:3px solid #303544; }
