@@ -951,29 +951,38 @@ payTonSwitch.addEventListener('click', ()=>{
   updateBuyButtonLabel();
 });
 
-modalBuyGift.addEventListener('click', async (e)=>{
+modalBuyGift.addEventListener('click', async (e) => {
   const payInTon = payTonSwitch.classList.contains('on');
-  if(payInTon){
+
+  // === Оплата TON ===
+  if (payInTon) {
     e.preventDefault();
     const starsPrice = Number(activeItemMeta.priceStars);
-    const tonPrice = starsPrice * STAR_TO_TON;         // списываем внутр. TON-баланс
+    const tonPrice = starsPrice * STAR_TO_TON;
     const bal = readBalance();
-    if(bal + 1e-9 < tonPrice){ alert('Недостаточно средств на внутреннем TON-балансе'); return; }
+    if (bal < tonPrice) {
+      alert('Not enough TON balance');
+      return;
+    }
     writeBalance(bal - tonPrice);
-    addHistory({ type:'purchase', amount: tonPrice, date: Date.now(), item: activeItemMeta.title, payWith:'ton' });
-    addPurchased({ id:activeItemMeta.id, title:activeItemMeta.title, price:activeItemMeta.priceStars, lottie:activeItemMeta.lottie, invoice:activeItemMeta.invoice, ribbon:'OWNED' });
+    addPurchased({
+      id: activeItemMeta.id,
+      title: activeItemMeta.title,
+      price: activeItemMeta.priceStars,
+      lottie: activeItemMeta.lottie,
+      invoice: activeItemMeta.invoice,
+      ribbon: 'OWNED'
+    });
+    addHistory({ type: 'purchase', amount: tonPrice, date: Date.now(), item: activeItemMeta.title, payWith: 'ton' });
+    showToast(`✅ Bought for TON ${tonPrice.toFixed(3)}`);
     closeItem();
-    showToast(`Куплено за TON ${tonPrice < 1 ? tonPrice.toFixed(4) : tonPrice.toFixed(3)}`);
+    return; // ✅ ОБЯЗАТЕЛЬНО! иначе дальше пойдёт invoice
   }
-  // Если переключатель OFF — остаётся оплата Stars по ссылке (как было)
-});
 
-/* ===== ✅ Stars invoice payment success → add to inventory ===== */
-Telegram.WebApp.onEvent('invoiceClosed', function (data) {
-  // data.status может быть "paid", "cancelled", "failed"
-  if (data.status === "paid") {
-    // Добавляем текущий товар в инвентарь
-    if (activeItemMeta) {
+  // === Оплата Stars через invoice ===
+  e.preventDefault();
+  Telegram.WebApp.openInvoice(activeItemMeta.invoice, (status) => {
+    if (status === "paid") {
       addPurchased({
         id: activeItemMeta.id,
         title: activeItemMeta.title,
@@ -982,12 +991,12 @@ Telegram.WebApp.onEvent('invoiceClosed', function (data) {
         invoice: activeItemMeta.invoice,
         ribbon: 'OWNED'
       });
-
-      showToast(`Added to inventory ✅`);
-      closeItem(); // закрываем модалку после покупки
+      showToast("✅ Added to inventory");
+      closeItem();
     }
-  }
+  });
 });
+
 
 
 
