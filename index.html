@@ -154,24 +154,41 @@ body{
 .modal-title { font-weight:800; font-size:20px; }
 .modal-close { background:transparent; border:0; color:var(--muted); font-weight:700; cursor:pointer; font-size:16px; }
 .modal-body{ flex:1; display:flex; align-items:center; justify-content:center; padding: 8px; overflow:auto; }
-.modal-media-wrap{ width:95%; max-width:520px; aspect-ratio: 1 / 1; display:flex; align-items:center; justify-content:center; border-radius:14px; background: linear-gradient(180deg, rgba(20,22,28,0.45), rgba(8,9,12,0.35)); border:1px solid rgba(255,255,255,0.03); box-shadow: 0 20px 60px rgba(0,0,0,.6); overflow:hidden; }
-.modal-media{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:8px; }
+.modal-media-wrap{ width:80%; max-width:520px; aspect-ratio: 1 / 1; display:flex; align-items:center; justify-content:center; border-radius:14px; background: linear-gradient(180deg, rgba(20,22,28,0.45), rgba(8,9,12,0.35)); border:1px solid rgba(255,255,255,0.03); box-shadow: 0 20px 60px rgba(0,0,0,.6); overflow:hidden; }
+.modal-media{ width:80%; height:80%; display:flex; align-items:center; justify-content:center; padding:8px; }
 .modal-bottom{ padding:18px 16px; display:flex; flex-direction:column; gap:10px; }
 .price-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .price-pill{ display:inline-flex; align-items:center; gap:10px; background:linear-gradient(180deg, rgba(255, 210, 75, 0.140), rgba(255, 195, 45, 0.140)); color:#51ff00d2; padding:10px 14px; border-radius:16px; font-weight:650; font-size:17px; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
 .btn-ghost{ background: rgba(255,255,255,0.06); color:#fff; padding:14px; border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,0.03); font-weight:800; text-decoration:none; }
 .btn-primary{ background: linear-gradient(90deg,#2fa6ff,#1a73ff); color:#fff; padding:16px; border-radius:12px; text-align:center; font-weight:900; text-decoration:none; }
-.modal-actions{ display:flex; gap:12px; flex-direction:column; }
+.modal-actions {
+  display:flex;
+  gap:12px;
+  flex-direction:column; /* ← ВОТ ЭТО ДОЛЖНО БЫТЬ */
+}
+
+
+.modal-actions a {
+  flex: 1;                  /* ✅ чтобы кнопки были одинаковой ширины */
+  text-align: center;
+}
+
 
 /* Pay toggle (only in modal) */
-.payton-row{ display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:4px; }
+.payton-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;  /* ✅ растягиваем по сторонам */
+  width: 100%;                     /* ✅ одна строка */
+  margin-top: 4px;
+  gap: 12px;
+}
+
 .payton-label{ color:#9aa3b2; font-weight:700; }
 .switch{ position:relative; width:52px; height:30px; border-radius:999px; background:#233045; border:1px solid #34415a; cursor:pointer; transition:.25s; }
 .switch::after{ content:''; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:.25s; }
 .switch.on{ background:#34C759; border-color:#2aa34a; }
 .switch.on::after{ left:25px; }
-
-/* Wallet sheet (Deposit+History) */
 .wallet-overlay{ position:fixed; inset:0; z-index:3000; display:none; align-items:flex-end; justify-content:center; background:rgba(8,10,12,.6); backdrop-filter:blur(4px); }
 .wallet-overlay.open{ display:flex; }
 .wallet-modal{ width:100%; max-width:560px; background:linear-gradient(180deg,#0e1219,#0b0f16); border-top-left-radius:18px; border-top-right-radius:18px; border:1px solid #232a3b; padding:14px 14px 18px; box-shadow: 0 -16px 40px rgba(0,0,0,.45); }
@@ -292,7 +309,28 @@ body{
 .toast.show{ pointer-events:auto; }
 
 /* ===== History (TON style) ===== */
-.history-list { display:flex; flex-direction:column; gap:18px; padding:4px 2px 20px; }
+.history-list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3245 #0f1116;
+}
+
+.history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: #0f1116;
+  border-radius: 4px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background-color: #2a3245;
+  border-radius: 4px;
+}
+
 .history-date { font-size:13px; font-weight:700; color:#9aa3b2; text-transform:uppercase; letter-spacing:.6px; margin-left:2px; }
 .history-item { background:#121722; border:1px solid #1f2633; border-radius:14px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; }
 .history-left { display:flex; flex-direction:column; gap:4px; }
@@ -323,10 +361,10 @@ body{
         <div id="balancePill" class="balance-pill" title="Balance">
           <img id="tonIcon" class="ton-icon" src="ton.svg" alt="TON">
           <span id="balanceValue" class="balance-val">0.00</span>
-          <div id="plusBtn" class="plus-btn" role="button" aria-label="Пополнить">+</div>
+          <div id="plusBtn" class="plus-btn" role="button" aria-label="Deposit">+</div>
           <svg id="walletCaret" class="wallet-caret" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <div id="walletMenu" class="wallet-menu" role="menu" aria-hidden="true">
-            <div class="row">Подключён:&nbsp;<span id="hfAddr" class="hf"></span></div>
+            <div class="row">Connected:&nbsp;<span id="hfAddr" class="hf"></span></div>
             <button id="disconnectBtn">Disconnect TON</button>
           </div>
         </div>
@@ -336,42 +374,56 @@ body{
     <!-- Banner -->
     <div class="banner" role="region" aria-label="banner">
       <div class="title">Check our news!</div>
-      <a id="bannerBtn" class="btn" href="https://example.com" target="_blank" rel="noopener">Open Gifts</a>
+      <a id="bannerBtn" class="btn" href="https://t.me/voco_in" target="_blank" rel="noopener">Open Voco</a>
     </div>
 
     <!-- Toggle -->
     <div class="toggle" role="group" aria-label="Фильтр">
       <input id="hideSold" type="checkbox" />
-      <label for="hideSold">Скрыть проданные подарки</label>
+      <label for="hideSold">Hide sold gifts</label>
     </div>
 
     <!-- Grid (market) -->
     <div class="grid" id="cardsGrid" aria-live="polite">
-      <article class="card" id="card1" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Cute sticker — 1 из 100">
-        <div class="ribbon" aria-hidden="true">1 из 100</div>
+      <article class="card" id="card1" data-sold="false" data-invoice-url="https://t.me/$MT7XilTzEUhVFQAA6GiCpOiKmf8" role="article" aria-label="Voco Coin">
+        <div class="ribbon" aria-hidden="true">1 of 250</div>
         <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/sticker.json">
           <div class="lottie-placeholder">Lottie 1</div>
         </div>
         <div class="footer">
           <div class="price">
             <img src="stars-DBKMczxe.png" alt="icon" class="price-icon">
-            <span class="price-value">0.01</span>
+            <span class="price-value">15</span>
           </div>
         </div>
       </article>
 
-      <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Dog sticker — 1 из 50">
-        <div class="ribbon" aria-hidden="true">1 из 50</div>
-        <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/vovashmyhol/shop/refs/heads/main/002_DOG%20(1).json">
+      <article class="card" id="card2" data-sold="false" data-invoice-url="https://t.me/$OEtEnkq5wEppDQAAuOeA4xzWyR4" role="article" aria-label="Exclusive reward">
+        <div class="ribbon" aria-hidden="true">1 of 110</div>
+        <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/VOCOCOCO/gifts/refs/heads/main/sticker%20(5).json">
           <div class="lottie-placeholder">Lottie 2</div>
         </div>
         <div class="footer">
           <div class="price">
             <img src="stars-DBKMczxe.png" alt="icon" class="price-icon">
-            <span class="price-value">25</span>
+            <span class="price-value">35</span>
           </div>
         </div>
       </article>
+
+      <article class="card" id="cardX" data-sold="false" data-invoice-url="https://t.me/$invoice_example" role="article" aria-label="Voco Pepe">
+  <div class="ribbon" aria-hidden="true">1 из 50</div>
+  <div class="media lottie" data-lottie-url="https://raw.githubusercontent.com/VOCOCOCO/gifts/refs/heads/main/sticker%20(2).json">
+    <div class="lottie-placeholder">Lottie 3</div>
+  </div>
+  <div class="footer">
+    <div class="price">
+      <img src="stars-DBKMczxe.png" alt="icon" class="price-icon">
+      <span class="price-value">150</span>
+    </div>
+  </div>
+</article>
+
     </div>
   </div>
 
