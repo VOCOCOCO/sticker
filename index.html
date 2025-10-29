@@ -968,6 +968,29 @@ modalBuyGift.addEventListener('click', async (e)=>{
   // Если переключатель OFF — остаётся оплата Stars по ссылке (как было)
 });
 
+/* ===== ✅ Stars invoice payment success → add to inventory ===== */
+Telegram.WebApp.onEvent('invoiceClosed', function (data) {
+  // data.status может быть "paid", "cancelled", "failed"
+  if (data.status === "paid") {
+    // Добавляем текущий товар в инвентарь
+    if (activeItemMeta) {
+      addPurchased({
+        id: activeItemMeta.id,
+        title: activeItemMeta.title,
+        price: activeItemMeta.priceStars,
+        lottie: activeItemMeta.lottie,
+        invoice: activeItemMeta.invoice,
+        ribbon: 'OWNED'
+      });
+
+      showToast(`Added to inventory ✅`);
+      closeItem(); // закрываем модалку после покупки
+    }
+  }
+});
+
+
+
 /* ========= Tabs switching ========= */
 const tab1 = $('#tab1'), tab2 = $('#tab2'), tab3 = $('#tab3');
 const mainApp = $('#mainApp'); const tab3Content = $('#tab3Content');
